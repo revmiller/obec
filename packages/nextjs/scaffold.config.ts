@@ -17,8 +17,10 @@ export const DEFAULT_ALCHEMY_API_KEY = "cR4WnXePioePZ5fFrnSiR";
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
+  // Base Sepolia hosts Registry + Pool contracts; Sepolia hosts the ENS resolver.
   targetNetworks: [
-    chains.foundry
+    chains.baseSepolia,
+    chains.sepolia
   ],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 3000,
