@@ -6,6 +6,15 @@ node_modules
 yarn-error.log
 *.log
 
+# Yarn (Berry)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.eslintcache
+
 # Environment & secrets
 .env
 .env.local
