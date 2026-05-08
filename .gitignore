@@ -1,0 +1,36 @@
+# Drafts (planning artifacts not for the public repo)
+/drafts
+
+# Dependencies
+node_modules
+yarn-error.log
+*.log
+
+# Environment & secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+packages/foundry/.env
+
+# OS / editor
+.DS_Store
+.idea
+.vscode
+
+# Foundry
+packages/foundry/cache
+packages/foundry/out
+packages/foundry/broadcast/*/31337
+packages/foundry/broadcast/**/dry-run
+
+# Next.js
+packages/nextjs/.next
+packages/nextjs/out
+packages/nextjs/build
+.vercel
+
+# Misc
+dist
+build
