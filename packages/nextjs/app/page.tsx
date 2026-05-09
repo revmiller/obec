@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { NextPage } from "next";
+import { MyMembership } from "~~/components/MyMembership";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 
@@ -21,6 +22,10 @@ const Home: NextPage = () => {
         <p className="mt-2 text-sm opacity-60">
           Protocol root: <code className="bg-base-300 px-1.5 py-0.5 rounded">{PROTOCOL_ROOT}</code>
         </p>
+      </section>
+
+      <section className="px-6 pb-6 max-w-4xl mx-auto w-full">
+        <MyMembership />
       </section>
 
       <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
