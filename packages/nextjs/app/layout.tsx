@@ -6,8 +6,9 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
-  title: "Hromada",
-  description: "Trustless community pools for shared physical resources.",
+  title: "Hromada — neighborhood commons on ENS",
+  description:
+    "ENS-native protocol for neighborhood commons. Neighbors pool USDC for shared physical resources via threshold-commit smart contracts with auto-refund. Built on Base + ENS for ETHPrague 2026.",
 });
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
