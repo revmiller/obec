@@ -49,12 +49,15 @@ export function ResourceCard({ resourceNode }: Props) {
   const fundedByAddress = resource[3] as `0x${string}`;
 
   return (
-    <div className="bg-base-200 rounded-xl p-5">
-      <h3 className="text-lg font-semibold">Resource subname</h3>
-      <p className="font-mono text-sm opacity-80 mt-1">{fullName}</p>
-      <p className="text-xs opacity-60 mt-1">One subname doing five jobs:</p>
+    <div className="bg-base-200 rounded-xl p-5 border border-primary/30">
+      <div className="text-xs uppercase tracking-wide opacity-60">ENS resource subname</div>
+      <p className="font-mono text-base mt-1">{fullName}</p>
+      <p className="text-sm opacity-80 mt-3 max-w-2xl leading-relaxed">
+        One subname doing five jobs at once — identifier, contract pointer, credential store, multichain router, and
+        IPFS doc root. Pick any of the five resolvers below; same name, different shape.
+      </p>
 
-      <ul className="mt-3 space-y-2 text-sm">
+      <ul className="mt-4 space-y-2 text-sm">
         <Row label="addr(node)" value={<ENSName address={fundedByAddress} />} hint="pool that funded it" />
         <Row label="addr(node, 2147568180)" value={<ENSName address={fundedByAddress} />} hint="ENSIP-11 multichain" />
         <Row label="text(funded-by)" value={fundedBy || "—"} hint="origin proposal" />
