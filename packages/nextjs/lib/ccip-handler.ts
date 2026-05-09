@@ -1,5 +1,6 @@
 import { signGatewayResponse } from "./ccip-signer";
 import { COIN_TYPE_BASE_SEPOLIA, COIN_TYPE_ETH } from "./coin-types";
+import { cacheGet, cacheSet } from "./rpc-cache";
 import {
   type Hex,
   createPublicClient,
@@ -50,11 +51,20 @@ export async function handleCcipRequest(config: HandlerConfig, callDataHex: Hex)
     return { error: `bad callData: ${(e as Error).message}`, status: 400 };
   }
 
+  // Cache by resolverCall (function + args). Result is independent of dnsName/sender;
+  // signature is recomputed each request with a fresh expiry.
+  const cacheKey = resolverCall.toLowerCase();
   let resultBytes: Hex;
-  try {
-    resultBytes = await resolveOne(config, resolverCall);
-  } catch (e) {
-    return { error: `resolve failed: ${(e as Error).message}`, status: 502 };
+  const cached = cacheGet(cacheKey);
+  if (cached) {
+    resultBytes = cached as Hex;
+  } else {
+    try {
+      resultBytes = await resolveOne(config, resolverCall);
+    } catch (e) {
+      return { error: `resolve failed: ${(e as Error).message}`, status: 502 };
+    }
+    cacheSet(cacheKey, resultBytes);
   }
 
   // Sign + encode response: (bytes result, uint64 expiry, bytes signature)
