@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { namehash } from "viem/ens";
+import { ENSName } from "~~/components/ENSName";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -54,7 +55,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
       ) : (
         <>
           <div className="mt-2 text-sm opacity-70">
-            Admin: <span className="font-mono">{hood?.[2]}</span>
+            Admin: <ENSName address={hood?.[2]} />
           </div>
 
           <section className="mt-10">
