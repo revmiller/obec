@@ -8,6 +8,7 @@ import { CreateProposalForm } from "~~/components/CreateProposalForm";
 import { ENSName } from "~~/components/ENSName";
 import { JoinNeighborhoodButton } from "~~/components/JoinNeighborhoodButton";
 import { MemberRow } from "~~/components/MemberRow";
+import { NeighborhoodDescription } from "~~/components/NeighborhoodDescription";
 import { ResourceRow } from "~~/components/ResourceRow";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
@@ -63,6 +64,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
           <div className="mt-2 text-sm opacity-70">
             Admin: <ENSName address={hood?.[2]} />
           </div>
+          <NeighborhoodDescription neighborhoodId={neighborhoodId} admin={hood?.[2] as `0x${string}` | undefined} />
           <JoinNeighborhoodButton neighborhoodId={neighborhoodId} />
 
           <section className="mt-10">
