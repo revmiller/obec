@@ -3,16 +3,10 @@ pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
 import { NameCoder } from "@ensdomains/ens-contracts/utils/NameCoder.sol";
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
-
-contract MockUSDC is ERC20 {
-    constructor() ERC20("Mock USDC", "USDC") {}
-    function decimals() public pure override returns (uint8) { return 6; }
-    function mint(address to, uint256 amount) external { _mint(to, amount); }
-}
+import { MockUSDC } from "../contracts/MockUSDC.sol";
 
 /// @notice One-shot deploy: Registry + Pool wired. On localhost (anvil) deploys a MockUSDC;
 ///         on testnets reads USDC_ADDRESS from env.
