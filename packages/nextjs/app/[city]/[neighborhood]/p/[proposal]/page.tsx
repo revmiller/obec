@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { formatUnits } from "viem";
 import { namehash } from "viem/ens";
+import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
@@ -108,6 +109,16 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
           {pool?.address && status === 1 /* Active */ && (
             <section className="mt-8">
               <CommitForm proposalNode={proposalNode} poolAddress={pool.address} />
+            </section>
+          )}
+
+          {status === 2 /* Executing */ && pr && (
+            <section className="mt-8">
+              <AttestButton
+                proposalNode={proposalNode}
+                attestationCount={pr.attestationCount}
+                attestationThreshold={pr.attestationThreshold}
+              />
             </section>
           )}
         </>
