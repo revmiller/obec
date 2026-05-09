@@ -30,7 +30,7 @@ contract ObecRegistry {
     struct Resource {
         bytes32 neighborhoodId;
         string label;           // "cargo-bikes"
-        string resourceType;    // "energy", "tool", "space"
+        string resourceType;    // "energy", "mobility", "tool", "space"
         address fundedBy;       // pool address
         bool active;
     }
@@ -51,9 +51,14 @@ contract ObecRegistry {
     mapping(bytes32 => bytes32[]) public neighborhoodMembers;
     mapping(bytes32 => bytes32[]) public neighborhoodResources;
 
+    // 1-based index into neighborhoodResources[r.neighborhoodId]; 0 means "not present".
+    // Tracked so deactivateResource is O(1) rather than scanning the array.
+    mapping(bytes32 => uint256) private _resourceIndex;
+
     event NeighborhoodCreated(bytes32 indexed neighborhoodId, string city, string name, address admin);
     event MemberJoined(bytes32 indexed neighborhoodId, bytes32 indexed memberNode, address wallet, string label);
     event ResourceRegistered(bytes32 indexed neighborhoodId, bytes32 indexed resourceNode, string label, string resourceType);
+    event ResourceDeactivated(bytes32 indexed neighborhoodId, bytes32 indexed resourceNode);
     event TextSet(bytes32 indexed node, string key, string value);
     event ContenthashSet(bytes32 indexed node, bytes hash);
     event CommitmentPoolSet(address pool);
@@ -62,6 +67,7 @@ contract ObecRegistry {
     error NotPool();
     error PoolAlreadySet();
     error NeighborhoodNotFound();
+    error ResourceNotActive();
     error AlreadyExists();
     error Unauthorized();
 
@@ -152,7 +158,9 @@ contract ObecRegistry {
             active: true
         });
 
-        neighborhoodResources[neighborhoodId].push(resourceNode);
+        bytes32[] storage list = neighborhoodResources[neighborhoodId];
+        list.push(resourceNode);
+        _resourceIndex[resourceNode] = list.length; // 1-based
 
         string[] storage labels = _nodeLabels[resourceNode];
         labels.push(label);
@@ -160,6 +168,34 @@ contract ObecRegistry {
         labels.push(n.city);
 
         emit ResourceRegistered(neighborhoodId, resourceNode, label, resourceType);
+    }
+
+    /// @notice Deactivate a resource so it drops out of the neighborhood listing. Pool-only;
+    ///         called on expiry. The registry row goes inactive but the pool keeps the namehash
+    ///         tombstoned in Status.Expired — a retry needs a new label.
+    /// @dev O(1) via swap-and-pop guided by _resourceIndex (1-based).
+    function deactivateResource(bytes32 node) external {
+        if (msg.sender != commitmentPool) revert NotPool();
+        Resource storage r = resources[node];
+        if (!r.active) revert ResourceNotActive();
+
+        bytes32 nbId = r.neighborhoodId;
+        r.active = false;
+
+        bytes32[] storage list = neighborhoodResources[nbId];
+        uint256 idx = _resourceIndex[node] - 1; // safe: r.active implied a present index >= 1
+        uint256 lastIdx = list.length - 1;
+
+        if (idx != lastIdx) {
+            bytes32 swapped = list[lastIdx];
+            list[idx] = swapped;
+            _resourceIndex[swapped] = idx + 1;
+        }
+
+        list.pop();
+        delete _resourceIndex[node];
+
+        emit ResourceDeactivated(nbId, node);
     }
 
     // -------------- Text & contenthash records --------------
@@ -179,6 +215,10 @@ contract ObecRegistry {
     }
 
     function _canModify(bytes32 node, address caller) internal view returns (bool) {
+        // Pool grant comes first by design: the pool writes status/maintainer/attestations on
+        // project nodes whose Resource row may be inactive (post-expiry tombstone) or whose
+        // membership-derived permissions don't apply. Reordering the membership/ownership
+        // checks ahead of this would re-gate writes the lifecycle relies on.
         if (caller == commitmentPool) return true;
         // Registry owner can write on the protocol root itself (e.g. text(obec.eth, "cities")
         // for federation discovery — frames the root as an ENS-native data structure).
