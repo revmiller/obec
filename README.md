@@ -23,11 +23,11 @@ We treat ENS as a programmable, cross-chain registry that a state machine on L2 
 
 Concrete instances of *ENS doing real work, not display*:
 
-1. **The state machine writes ENS as it executes.** When a proposal hits its threshold, the pool atomically (a) creates a new ENS subname for the resource, (b) writes `funded-by` / `status` / `maintainer` text records, and (c) releases milestone 0. ENS is *part* of the state machine, not metadata about it.
-2. **Subnames are functional addresses.** `addr(resourceNode)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.obec.eth` lands funds in the right escrow on the right chain. The name *is* the route.
+1. **The state machine writes ENS as it executes.** A project gets a single ENS subname at proposal creation; the pool atomically writes `status` ("proposing" → "active" → "completed"/"expired"), `maintainer`, and `attestations` text records as the lifecycle progresses, and on expiry deactivates the registry row so the dead project drops out of the neighborhood listing. ENS is *part* of the state machine, not metadata about it.
+2. **Subnames are functional addresses.** `addr(node)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.obec.eth` lands funds in the right escrow on the right chain. The name *is* the route.
 3. **Subnames as ACL.** Membership in the namespace = permission to modify it. `_canModify` checks ENS-derived membership.
 4. **Multi-coin per subname.** `addr(node, 2147568180)` returns the Base Sepolia address; `addr(node, 60)` returns Ethereum. One name, multichain rails.
-5. **The 5-faces beat.** Same resource subname resolves five different ways: pool address, multichain address, `funded-by`, `maintainer`, `contenthash`.
+5. **The 5-faces beat.** Same project subname resolves five different ways: pool address, multichain address, `status`, `maintainer`, `contenthash`.
 6. **ENSIP-19 reverse on L2.** Seeded wallets show their `anna.vinohrady…` name natively on Basescan.
 7. **Federation discovery on the protocol root.** `text(obec.eth, "cities")` makes the root itself an ENS-discoverable data structure.
 
@@ -40,8 +40,8 @@ Concrete instances of *ENS doing real work, not display*:
 | ENSIP-10 wildcard (`IExtendedResolver`) | `ObecResolver.sol` |
 | EIP-3668 CCIP-Read | Resolver + Next.js gateway at `/api/ccip/[sender]/[callData]` |
 | ENSIP-9/11 multi-coin | Gateway returns Base Sepolia addr for coinType 2147568180 |
-| ENSIP-7 contenthash | Resource subnames expose a contenthash slot (v1 demo seeds a placeholder; v2 pins real docs) |
-| ENSIP-19 default reverse (L2) | Seed registers reverse names via `L2ReverseRegistrar` on Base Sepolia |
+| ENSIP-7 contenthash | Project subnames expose a contenthash slot (v1 demo seeds a placeholder; v2 pins real docs) |
+| ENSIP-19 default reverse (L2) | Member wallets register reverse names via `L2ReverseRegistrar` on Base Sepolia |
 | EIP-137 namehash | All text records keyed by canonical namehash via `NameCoder` |
 
 ---
@@ -79,24 +79,26 @@ None → Active → Executing → Completed
               ↘ Disputed
 ```
 
-- **Active**: members commit USDC; auto-refund if deadline passes without threshold.
-- **Executing** (threshold met): resource subname auto-created; milestone 0 released.
-- **Completed** (warranty elapsed after attestation threshold): all milestones released.
+The bold names below are the on-chain `Status` enum (the pool's source of truth). The lowercase string in parentheses is the `status` text record that the pool writes for off-chain consumers. The two namespaces overlap but don't match exactly — e.g. enum `Active` corresponds to text `"proposing"`, and enum `Executing` corresponds to text `"active"`.
+
+- **Active** (status text "proposing"): project subname registered; members commit USDC; auto-refund if deadline passes without threshold.
+- **Executing** (status text "active", threshold met): milestone 0 released; maintainer anchored.
+- **Completed** (status text "completed", warranty elapsed after attestation threshold): all milestones released.
+- **Expired** (status text "expired"): registry row deactivated and removed from the neighborhood list. The pool's namehash slot stays tombstoned, so a retry uses a new label.
 
 ---
 
-## Demo state (post-seed)
+## Demo state
 
-After running `Seed.s.sol` against Base Sepolia, the live demo shows:
+The Base Sepolia demo state shows:
 
 - `obec.eth` → `text("cities") = "prague"` (federation discovery)
 - `vinohrady.prague.obec.eth` — (example) Prague neighborhood with 15 members
 - 15 member subnames (`anna…ondra`) with **ENSIP-19 reverse names** registered on Base Sepolia (Basescan shows `anna.vinohrady…` instead of `0x…`)
-- `proposal-cargo-bikes.vinohrady.prague.obec.eth` — proposal funded ($8,400 from 14 members), executor = `karel`
-- `cargo-bikes.vinohrady.prague.obec.eth` — auto-created resource with all 5 records populated:
+- `cargo-bikes.vinohrady.prague.obec.eth` — single project subname spanning the full lifecycle: proposal funded ($8,400 from 14 members), executor = `karel`. All five records populated:
   - `addr(node)` → pool
   - `addr(node, 2147568180)` → same, ENSIP-11
-  - `text("funded-by")` → `proposal-cargo-bikes`
+  - `text("status")` → `active` (flips through `proposing` → `active` → `completed`, or `expired` on a missed threshold)
   - `text("maintainer")` → `karel.vinohrady…` (frontend resolves to ENS)
   - `text("attestations")` → 8 attesters (frontend resolves each)
   - `contenthash(node)` → placeholder CID (v2 pins real usage docs)
