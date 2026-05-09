@@ -3,7 +3,9 @@
 import { use } from "react";
 import Link from "next/link";
 import { namehash } from "viem/ens";
+import { CreateNeighborhoodButton } from "~~/components/CreateNeighborhoodButton";
 import { ENSName } from "~~/components/ENSName";
+import { JoinNeighborhoodButton } from "~~/components/JoinNeighborhoodButton";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -51,12 +53,14 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
         <div className="mt-10 p-6 bg-base-200 rounded-xl">
           <p className="text-lg">This neighborhood doesn&apos;t exist yet.</p>
           <p className="text-sm opacity-70 mt-2">Anyone can create it onchain. The first creator becomes admin.</p>
+          <CreateNeighborhoodButton city={city} neighborhood={neighborhood} />
         </div>
       ) : (
         <>
           <div className="mt-2 text-sm opacity-70">
             Admin: <ENSName address={hood?.[2]} />
           </div>
+          <JoinNeighborhoodButton neighborhoodId={neighborhoodId} />
 
           <section className="mt-10">
             <h2 className="text-2xl font-semibold mb-3">
