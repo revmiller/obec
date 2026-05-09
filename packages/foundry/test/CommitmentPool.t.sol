@@ -117,8 +117,14 @@ contract CommitmentPoolTest is Test {
 
     // -------- threshold transition --------
 
-    function test_thresholdTransition_releasesMilestone0AndCreatesResource() public {
+    function test_thresholdTransition_releasesMilestone0AndFlipsStatus() public {
         bytes32 pid = _propose();
+
+        // Pre-funding: one entry registered at proposal creation, status "proposing".
+        bytes32[] memory listBefore = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(listBefore.length, 1);
+        assertEq(listBefore[0], pid);
+        assertEq(registry.getText(pid, "status"), "proposing");
 
         uint256 janBefore = usdc.balanceOf(jan);
         _commitAll(pid);
@@ -129,28 +135,83 @@ contract CommitmentPoolTest is Test {
         // Milestone 0 = 30% of totalCommitted (not target — so surplus over target isn't stuck).
         assertEq(usdc.balanceOf(jan) - janBefore, (pr.totalCommitted * 30) / 100);
 
-        // Resource subname should exist
-        bytes32[] memory list = registry.getNeighborhoodResources(neighborhoodId);
-        // Two: the proposal subname + the auto-created resource subname
-        assertEq(list.length, 2);
-
-        // The resource node should equal the second registered (proposal first, resource second)
-        bytes32 resourceNode = pr.resourceNode;
-        assertTrue(resourceNode != bytes32(0));
-        assertEq(registry.getText(resourceNode, "funded-by"), "proposal-cargo-bikes");
-        assertEq(registry.getText(resourceNode, "status"), "active");
-        assertEq(registry.getText(resourceNode, "maintainer"), Strings.toHexString(jan));
+        // Post-funding: still one entry, same node; status flipped, maintainer anchored.
+        bytes32[] memory listAfter = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(listAfter.length, 1);
+        assertEq(listAfter[0], pid);
+        assertEq(registry.getText(pid, "status"), "active");
+        assertEq(registry.getText(pid, "maintainer"), Strings.toHexString(jan));
     }
 
     // -------- expiry / refund --------
 
-    function test_checkExpiry_flips() public {
+    function test_checkExpiry_flipsAndDeactivates() public {
         bytes32 pid = _propose();
         vm.prank(members[0]);
         pool.commit(pid, PER_MBR);
         vm.warp(block.timestamp + 30 days + 1);
         pool.checkExpiry(pid);
+
         assertEq(uint8(pool.status(pid)), uint8(CommitmentPool.Status.Expired));
+        assertEq(registry.getText(pid, "status"), "expired");
+
+        // Deactivation: the resource row is inactive and the array entry is gone.
+        (, , , , bool active) = registry.resources(pid);
+        assertFalse(active);
+
+        bytes32[] memory list = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(list.length, 0);
+    }
+
+    function test_checkExpiry_namehashRemainsTombstoned() public {
+        // The pool's namehash slot is a one-shot tombstone. checkExpiry clears the registry-side
+        // row (so the neighborhood listing doesn't show a dead project), but re-proposing under
+        // the same label is rejected — pool state would otherwise carry over from the failed run.
+        bytes32 pid = _propose();
+        vm.warp(block.timestamp + 30 days + 1);
+        pool.checkExpiry(pid);
+
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.WrongStatus.selector);
+        pool.createProposal(_baseParams());
+    }
+
+    function test_deactivateResource_onlyPool() public {
+        bytes32 pid = _propose();
+        vm.expectRevert(ObecRegistry.NotPool.selector);
+        registry.deactivateResource(pid);
+    }
+
+    function test_deactivateResource_swapAndPopBranch() public {
+        // First proposal occupies index 0 in neighborhoodResources.
+        bytes32 pidA = _propose();
+
+        // Second proposal occupies index 1 under a different label.
+        CommitmentPool.CreateParams memory pB = _baseParams();
+        pB.label = "tools";
+        vm.prank(members[0]);
+        bytes32 pidB = pool.createProposal(pB);
+
+        bytes32[] memory listBefore = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(listBefore.length, 2);
+        assertEq(listBefore[0], pidA);
+        assertEq(listBefore[1], pidB);
+
+        // Expire A (idx=0, not last) — exercises the swap-and-pop branch.
+        vm.warp(block.timestamp + 30 days + 1);
+        pool.checkExpiry(pidA);
+
+        bytes32[] memory listMid = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(listMid.length, 1);
+        assertEq(listMid[0], pidB); // B swapped into A's slot
+
+        // Deactivating B now only succeeds if _resourceIndex[B] was rewritten
+        // from 2 to 1 during the swap. A stale index would compute idx=1 against
+        // a length-1 array, underflowing inside the swap branch.
+        pool.checkExpiry(pidB);
+
+        bytes32[] memory listAfter = registry.getNeighborhoodResources(neighborhoodId);
+        assertEq(listAfter.length, 0);
     }
 
     function test_claimRefund_onlyAfterExpiry() public {
@@ -189,7 +250,7 @@ contract CommitmentPoolTest is Test {
         assertEq(usdc.balanceOf(jan) - janBefore, (pr.totalCommitted * 50) / 100);
 
         // Attesters list is populated and the attestations text record anchors them
-        // on the resource subname as a verifiable credential.
+        // on the project subname as a verifiable credential.
         address[] memory attesters = pool.getAttesters(pid);
         assertEq(attesters.length, 8);
 
@@ -197,7 +258,7 @@ contract CommitmentPoolTest is Test {
         for (uint256 i = 1; i < 8; i++) {
             expected = string.concat(expected, ",", Strings.toHexString(members[i]));
         }
-        assertEq(registry.getText(pr.resourceNode, "attestations"), expected);
+        assertEq(registry.getText(pid, "attestations"), expected);
     }
 
     function test_attest_doubleAttestReverts() public {
@@ -267,14 +328,13 @@ contract CommitmentPoolTest is Test {
     function _baseParams() internal view returns (CommitmentPool.CreateParams memory p) {
         p = CommitmentPool.CreateParams({
             neighborhoodId: neighborhoodId,
-            label: "proposal-cargo-bikes",
+            label: "cargo-bikes",
             executor: jan,
             targetAmount: TARGET,
             minMembers: MIN_MBRS,
             deadline: uint64(block.timestamp + 30 days),
             warrantyDuration: WARRANTY,
             attestationThreshold: 8,
-            resourceLabel: "cargo-bikes",
             resourceType: "mobility"
         });
     }
