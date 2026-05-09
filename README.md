@@ -1,12 +1,16 @@
 # Hromada
 
-**ENS-native protocol for neighborhood commons.** Neighbors pool USDC for shared physical resources via threshold-commit smart contracts. **Auto-refund if the fundraise falls short**; milestone-released escrow if it succeeds, with attestation-gated payouts. ENS subnames serve as identity, credentials, resource registry, multichain payment rails, and IPFS doc roots.
+**ENS-native protocol for neighborhood commons.** Neighbors pool USDC for shared physical resources via threshold-commit smart contracts. **Auto-refund if the fundraise falls short**; milestone-released escrow if it succeeds, with attestation-gated payouts. ENS subnames serve as identity, credentials, resource registry, and multichain payment rails.
 
 The naming hierarchy mirrors real-world geography:
 
 ```
-anna.vinohrady.prague.hromada.eth
-└──┴────────┴──────┴───────────── member . neighborhood . city . protocol root
+anna . vinohrady . prague . hromada.eth
+  │         │          │         │
+  │         │          │         └─ protocol root
+  │         │          └─ city
+  │         └─ neighborhood
+  └─ member
 ```
 
 Built for **ETHPrague 2026**.
@@ -36,9 +40,9 @@ Concrete instances of *ENS doing real work, not display*:
 | ENSIP-10 wildcard (`IExtendedResolver`) | `HromadaResolver.sol` |
 | EIP-3668 CCIP-Read | Resolver + Next.js gateway at `/api/ccip/[sender]/[callData]` |
 | ENSIP-9/11 multi-coin | Gateway returns Base Sepolia addr for coinType 2147568180 |
-| ENSIP-7 contenthash | Resource subname points at IPFS-pinned usage docs |
+| ENSIP-7 contenthash | Resource subnames expose a contenthash slot (v1 demo seeds a placeholder; v2 pins real docs) |
 | ENSIP-19 default reverse (L2) | Seed registers reverse names via `L2ReverseRegistrar` on Base Sepolia |
-| EIP-137 namehash | All text records keyed by canonical namehash (cross-language verified) |
+| EIP-137 namehash | All text records keyed by canonical namehash via `NameCoder` |
 
 ---
 
@@ -95,7 +99,7 @@ After running `Seed.s.sol` against Base Sepolia, the live demo shows:
   - `text("funded-by")` → `proposal-cargo-bikes`
   - `text("maintainer")` → `karel.vinohrady…` (frontend resolves to ENS)
   - `text("attestations")` → 8 attesters (frontend resolves each)
-  - `contenthash(node)` → IPFS pin
+  - `contenthash(node)` → placeholder CID (v2 pins real usage docs)
 
 Pool state: milestone 0 (30%) and milestone 1 (50%) released to executor; milestone 2 (20%) claimable after warranty.
 
