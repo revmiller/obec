@@ -1,6 +1,9 @@
 # Drafts (planning artifacts not for the public repo)
 /drafts
 
+# Claude Code local settings + scheduled task state
+/.claude
+
 # Dependencies
 node_modules
 yarn-error.log
