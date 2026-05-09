@@ -9,6 +9,7 @@ import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
 import { MyCommitment } from "~~/components/MyCommitment";
+import { ResolvedViaENS } from "~~/components/ResolvedViaENS";
 import { ResourceCard } from "~~/components/ResourceCard";
 import { ShareButton } from "~~/components/ShareButton";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
@@ -186,6 +187,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
           {pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}` && (
             <section className="mt-8">
               <ResourceCard resourceNode={pr.resourceNode as `0x${string}`} />
+            </section>
+          )}
+
+          {pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}` && pr.resourceLabel && (
+            <section className="mt-6">
+              <ResolvedViaENS name={`${pr.resourceLabel}.${neighborhood}.${city}.${PROTOCOL_ROOT}`} />
             </section>
           )}
 
