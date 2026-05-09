@@ -32,7 +32,7 @@ contract CommitmentPool is ReentrancyGuard {
     uint16 public constant MILESTONE_1_BPS = 5_000;
     uint16 public constant MILESTONE_2_BPS = 2_000;
 
-    enum Status { None, Active, Funded, Executing, Completed, Expired, Disputed }
+    enum Status { None, Active, Executing, Completed, Expired, Disputed }
 
     struct Proposal {
         bytes32 neighborhoodId;
@@ -42,7 +42,6 @@ contract CommitmentPool is ReentrancyGuard {
         uint256 minMembers;
         uint64  deadline;
         uint64  warrantyDuration;       // seconds; small for demo, 30 days default in production
-        uint64  fundedAt;
         uint64  attestedAt;
         uint256 attestationThreshold;
         uint256 totalCommitted;
@@ -73,7 +72,6 @@ contract CommitmentPool is ReentrancyGuard {
 
     error NotMember();
     error NotActive();
-    error NotFunded();
     error NotExpired();
     error PastDeadline();
     error AlreadyAttested();
@@ -229,7 +227,7 @@ contract CommitmentPool is ReentrancyGuard {
 
     function raiseDispute(bytes32 proposalNode) external {
         Proposal storage pr = _proposals[proposalNode];
-        if (pr.status != Status.Funded && pr.status != Status.Executing) revert WrongStatus();
+        if (pr.status != Status.Executing) revert WrongStatus();
         if (commitments[proposalNode][msg.sender] == 0) revert NotMember();
         pr.status = Status.Disputed;
         emit Disputed(proposalNode, msg.sender);
@@ -239,8 +237,7 @@ contract CommitmentPool is ReentrancyGuard {
 
     function _transitionToFunded(bytes32 proposalNode) internal {
         Proposal storage pr = _proposals[proposalNode];
-        pr.status = Status.Executing; // skip past Funded sentinel; first milestone fires immediately
-        pr.fundedAt = uint64(block.timestamp);
+        pr.status = Status.Executing; // first milestone fires immediately
         emit ThresholdMet(proposalNode, pr.totalCommitted, pr.memberCount);
 
         // Auto-create the resource subname.

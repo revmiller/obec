@@ -53,7 +53,7 @@ contract HromadaRegistryTest is Test {
         );
         assertEq(id, expected);
 
-        (string memory city, string memory name, address a, , bool active) = registry.neighborhoods(id);
+        (string memory city, string memory name, address a, bool active) = registry.neighborhoods(id);
         assertEq(city, "prague");
         assertEq(name, "vinohrady");
         assertEq(a, admin);

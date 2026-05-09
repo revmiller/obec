@@ -16,7 +16,6 @@ contract HromadaRegistry {
         string city;            // "prague"
         string name;            // "vinohrady"
         address admin;
-        bytes32 cityNode;       // namehash of "prague.${PROTOCOL_ROOT}"
         bool active;
     }
 
@@ -91,7 +90,6 @@ contract HromadaRegistry {
             city: city,
             name: name,
             admin: msg.sender,
-            cityNode: cityNode,
             active: true
         });
 
