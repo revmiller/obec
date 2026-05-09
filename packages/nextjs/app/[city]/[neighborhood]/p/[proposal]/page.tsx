@@ -46,6 +46,15 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
   const committed = pr?.totalCommitted ?? 0n;
   const progress = target > 0n ? Number((committed * 100n) / target) : 0;
 
+  const memberCount = Number(pr?.memberCount ?? 0n);
+  const minMembers = Number(pr?.minMembers ?? 0n);
+  const membersNeeded = Math.max(0, minMembers - memberCount);
+
+  const deadlineSec = Number(pr?.deadline ?? 0n);
+  const nowSec = Math.floor(Date.now() / 1000);
+  const secsUntilDeadline = deadlineSec - nowSec;
+  const deadlineLabel = formatDeadline(secsUntilDeadline);
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <div className="text-sm opacity-60">
@@ -82,30 +91,52 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
 
           <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-base-200 rounded-xl p-5">
-              <div className="text-sm opacity-70">Target</div>
-              <div className="text-2xl font-semibold">{formatUnits(target, USDC_DECIMALS)} USDC</div>
-              <div className="mt-3 text-sm opacity-70">Committed</div>
-              <div className="text-lg">
-                {formatUnits(committed, USDC_DECIMALS)} USDC <span className="opacity-60">({progress}%)</span>
+              <div className="text-sm opacity-70">Pool target</div>
+              <div className="text-3xl font-semibold mt-1">€{formatUnits(target, USDC_DECIMALS)}</div>
+              <div className="text-xs opacity-60 mt-0.5">{formatUnits(target, USDC_DECIMALS)} USDC</div>
+
+              <div className="mt-5 flex items-baseline justify-between">
+                <div className="text-2xl font-semibold">€{formatUnits(committed, USDC_DECIMALS)}</div>
+                <div className="text-sm opacity-70">{progress}% committed</div>
               </div>
-              <div className="mt-2 w-full h-2 rounded-full bg-base-300 overflow-hidden">
-                <div className="h-full bg-primary" style={{ width: `${Math.min(progress, 100)}%` }} />
+              <div className="mt-2 w-full h-3 rounded-full bg-base-300 overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
               </div>
-              <div className="mt-3 text-sm">
-                Members:{" "}
-                <span className="font-semibold">
-                  {pr?.memberCount?.toString() ?? "0"} / {pr?.minMembers?.toString() ?? "0"}
-                </span>
+
+              <div className="mt-4 text-sm">
+                {membersNeeded > 0 ? (
+                  <>
+                    <span className="font-semibold">{membersNeeded} more</span> neighbor{membersNeeded === 1 ? "" : "s"}{" "}
+                    needed
+                    <span className="opacity-60">
+                      {" "}
+                      ({memberCount} of {minMembers} joined)
+                    </span>
+                  </>
+                ) : (
+                  <span className="opacity-70">{memberCount} neighbors committed (minimum reached)</span>
+                )}
               </div>
             </div>
 
             <div className="bg-base-200 rounded-xl p-5">
-              <div className="text-sm opacity-70">Executor</div>
+              <div className="text-sm opacity-70">Deadline</div>
+              <div className={`text-2xl font-semibold mt-1 ${secsUntilDeadline < 0 ? "text-error" : ""}`}>
+                {deadlineLabel}
+              </div>
+              <div className="text-xs opacity-60 mt-0.5">
+                {pr ? new Date(deadlineSec * 1000).toLocaleString() : "—"}
+              </div>
+              <div className="text-xs opacity-70 mt-3">
+                {secsUntilDeadline > 0
+                  ? "If the target isn't reached by then, every commitment is automatically refunded."
+                  : "Deadline passed."}
+              </div>
+
+              <div className="mt-5 text-sm opacity-70">Executor</div>
               <div className="mt-1">
                 <ENSName address={pr?.executor} />
               </div>
-              <div className="mt-3 text-sm opacity-70">Deadline</div>
-              <div className="text-sm">{pr ? new Date(Number(pr.deadline) * 1000).toLocaleString() : "—"}</div>
               <div className="mt-3 text-sm opacity-70">Warranty after release</div>
               <div className="text-sm">{pr ? `${pr.warrantyDuration?.toString()} seconds` : "—"}</div>
             </div>
@@ -163,6 +194,17 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
       )}
     </div>
   );
+}
+
+function formatDeadline(secs: number): string {
+  if (secs <= 0) return "passed";
+  const days = Math.floor(secs / 86400);
+  if (days >= 2) return `${days} days`;
+  const hours = Math.floor(secs / 3600);
+  if (hours >= 2) return `${hours} hours`;
+  const minutes = Math.floor(secs / 60);
+  if (minutes >= 1) return `${minutes} minutes`;
+  return `${secs} seconds`;
 }
 
 function Milestone({ label, released }: { label: string; released: boolean }) {
