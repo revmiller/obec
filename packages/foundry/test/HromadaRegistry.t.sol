@@ -155,8 +155,8 @@ contract HromadaRegistryTest is Test {
     function test_setText_poolAlwaysAllowed() public {
         (, bytes32 annaNode) = _seedNeighborhoodWithAnna();
         vm.prank(pool);
-        registry.setText(annaNode, "funded-by", "proposal-cargobikes");
-        assertEq(registry.getText(annaNode, "funded-by"), "proposal-cargobikes");
+        registry.setText(annaNode, "funded-by", "proposal-cargo-bikes");
+        assertEq(registry.getText(annaNode, "funded-by"), "proposal-cargo-bikes");
     }
 
     function test_setText_ownerCanSetOnRoot() public {

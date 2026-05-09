@@ -19,7 +19,7 @@ interface IL2ReverseRegistrar {
 contract Seed is Script {
     string constant CITY = "prague";
     string constant NEIGHBORHOOD = "vinohrady";
-    string constant PROPOSAL_LABEL = "proposal-cargobikes";
+    string constant PROPOSAL_LABEL = "proposal-cargo-bikes";
     string constant RESOURCE_LABEL = "cargo-bikes";
     string constant RESOURCE_TYPE = "mobility";
 

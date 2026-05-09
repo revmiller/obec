@@ -23,7 +23,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
-  const [label, setLabel] = useState("proposal-cargobikes");
+  const [label, setLabel] = useState("proposal-cargo-bikes");
   const [executor, setExecutor] = useState<string>("");
   const [description, setDescription] = useState(
     "Two e-cargo bikes for our building. 14 households share unlimited access via key cabinet + booking calendar. Replaces ~80% of family car trips for groceries, school runs, and hardware store hauls.",
