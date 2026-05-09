@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import { Test } from "forge-std/Test.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
@@ -137,6 +138,7 @@ contract CommitmentPoolTest is Test {
         assertTrue(resourceNode != bytes32(0));
         assertEq(registry.getText(resourceNode, "funded-by"), "proposal-solar");
         assertEq(registry.getText(resourceNode, "status"), "active");
+        assertEq(registry.getText(resourceNode, "maintainer"), Strings.toHexString(jan));
     }
 
     // -------- expiry / refund --------
@@ -184,6 +186,17 @@ contract CommitmentPoolTest is Test {
         CommitmentPool.Proposal memory pr = pool.getProposal(pid);
         assertTrue(pr.milestoneReleased[1]);
         assertEq(usdc.balanceOf(jan) - janBefore, (TARGET * 50) / 100);
+
+        // Attesters list is populated and the attestations text record anchors them
+        // on the resource subname as a verifiable credential.
+        address[] memory attesters = pool.getAttesters(pid);
+        assertEq(attesters.length, 8);
+
+        string memory expected = Strings.toHexString(members[0]);
+        for (uint256 i = 1; i < 8; i++) {
+            expected = string.concat(expected, ",", Strings.toHexString(members[i]));
+        }
+        assertEq(registry.getText(pr.resourceNode, "attestations"), expected);
     }
 
     function test_attest_doubleAttestReverts() public {

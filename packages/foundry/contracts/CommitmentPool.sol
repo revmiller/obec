@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { NameCoder } from "@ensdomains/ens-contracts/utils/NameCoder.sol";
 
 interface IRegistry {
@@ -59,6 +60,7 @@ contract CommitmentPool is ReentrancyGuard {
     mapping(bytes32 => Proposal) private _proposals;
     mapping(bytes32 => mapping(address => uint256)) public commitments;
     mapping(bytes32 => mapping(address => bool))    public hasAttested;
+    mapping(bytes32 => address[]) private _attesters;
 
     event ProposalCreated(bytes32 indexed proposalNode, bytes32 indexed neighborhoodId, address executor);
     event Committed(bytes32 indexed proposalNode, address indexed member, uint256 amount, uint256 totalCommitted);
@@ -93,6 +95,10 @@ contract CommitmentPool is ReentrancyGuard {
 
     function status(bytes32 node) external view returns (Status) {
         return _proposals[node].status;
+    }
+
+    function getAttesters(bytes32 node) external view returns (address[] memory) {
+        return _attesters[node];
     }
 
     // -------------- createProposal --------------
@@ -206,10 +212,13 @@ contract CommitmentPool is ReentrancyGuard {
         if (hasAttested[proposalNode][msg.sender]) revert AlreadyAttested();
 
         hasAttested[proposalNode][msg.sender] = true;
+        _attesters[proposalNode].push(msg.sender);
         pr.attestationCount += 1;
         emit Attested(proposalNode, msg.sender, pr.attestationCount);
 
         if (pr.attestationCount >= pr.attestationThreshold && !pr.milestoneReleased[1]) {
+            // Anchor attesters as a verifiable credential on the resource subname.
+            registry.setText(pr.resourceNode, "attestations", _formatAttesters(proposalNode));
             _releaseMilestone(proposalNode, 1);
             pr.attestedAt = uint64(block.timestamp);
         }
@@ -250,6 +259,7 @@ contract CommitmentPool is ReentrancyGuard {
         pr.resourceNode = resourceNode;
         registry.setText(resourceNode, "funded-by", pr.label);
         registry.setText(resourceNode, "status", "active");
+        registry.setText(resourceNode, "maintainer", Strings.toHexString(pr.executor));
 
         _releaseMilestone(proposalNode, 0);
     }
@@ -269,5 +279,14 @@ contract CommitmentPool is ReentrancyGuard {
         if (idx == 1) return MILESTONE_1_BPS;
         if (idx == 2) return MILESTONE_2_BPS;
         revert MilestoneNotReady();
+    }
+
+    function _formatAttesters(bytes32 proposalNode) internal view returns (string memory out) {
+        address[] memory list = _attesters[proposalNode];
+        for (uint256 i = 0; i < list.length; i++) {
+            out = i == 0
+                ? Strings.toHexString(list[i])
+                : string.concat(out, ",", Strings.toHexString(list[i]));
+        }
     }
 }
