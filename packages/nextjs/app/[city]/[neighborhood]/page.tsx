@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { namehash } from "viem/ens";
 import { CreateNeighborhoodButton } from "~~/components/CreateNeighborhoodButton";
+import { CreateProposalForm } from "~~/components/CreateProposalForm";
 import { ENSName } from "~~/components/ENSName";
 import { JoinNeighborhoodButton } from "~~/components/JoinNeighborhoodButton";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
@@ -80,9 +81,12 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
           </section>
 
           <section className="mt-10">
-            <h2 className="text-2xl font-semibold mb-3">
-              Proposals & Resources <span className="opacity-60 text-base">({resourceNodes?.length ?? 0})</span>
-            </h2>
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-2xl font-semibold mb-3">
+                Proposals & Resources <span className="opacity-60 text-base">({resourceNodes?.length ?? 0})</span>
+              </h2>
+            </div>
+            <CreateProposalForm neighborhoodId={neighborhoodId} />
             {!resourceNodes || resourceNodes.length === 0 ? (
               <p className="opacity-60 text-sm">No proposals yet.</p>
             ) : (
