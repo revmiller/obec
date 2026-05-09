@@ -74,10 +74,10 @@ export function ResourceCard({ resourceNode }: Props) {
 
 function Row({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
   return (
-    <li className="grid grid-cols-[160px_1fr_auto] gap-3 items-baseline">
+    <li className="grid grid-cols-1 sm:grid-cols-[180px_1fr_auto] gap-1 sm:gap-3 sm:items-baseline">
       <span className="font-mono text-xs opacity-70">{label}</span>
       <span className="truncate">{value}</span>
-      <span className="text-xs opacity-50">{hint}</span>
+      <span className="text-xs opacity-50 sm:text-right">{hint}</span>
     </li>
   );
 }

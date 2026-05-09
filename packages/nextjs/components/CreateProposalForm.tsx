@@ -105,7 +105,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           className="textarea textarea-bordered textarea-sm w-full mt-1"
         />
       </label>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Target (EUR ≈ USDC)" value={targetEur} onChange={setTargetEur} />
         <Field label="Min members" value={minMembers} onChange={setMinMembers} />
         <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />

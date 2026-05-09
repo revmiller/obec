@@ -51,7 +51,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
       </div>
 
       <h1 className="text-4xl font-bold mt-2 capitalize">{neighborhood}</h1>
-      <p className="font-mono text-sm opacity-70 mt-1">{fullName}</p>
+      <p className="font-mono text-xs sm:text-sm opacity-70 mt-1 break-all">{fullName}</p>
 
       {!exists ? (
         <div className="mt-10 p-6 bg-base-200 rounded-xl">

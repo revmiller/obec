@@ -72,12 +72,16 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
         </Link>
       </div>
 
-      <div className="flex items-start justify-between gap-4 mt-2">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mt-2">
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold capitalize">{proposal.replace(/-/g, " ")}</h1>
-          <p className="font-mono text-sm opacity-70 mt-1">{fullName}</p>
+          <p className="font-mono text-xs sm:text-sm opacity-70 mt-1 break-all">{fullName}</p>
         </div>
-        {exists && <ShareButton label="Share with neighbors" />}
+        {exists && (
+          <div className="shrink-0">
+            <ShareButton label="Share with neighbors" />
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -150,7 +154,7 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
 
           <section className="mt-8 bg-base-200 rounded-xl p-5">
             <h2 className="text-lg font-semibold mb-2">Milestones</h2>
-            <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
               <Milestone label="On threshold (30%)" released={pr?.milestoneReleased?.[0] ?? false} />
               <Milestone label="On attestations (50%)" released={pr?.milestoneReleased?.[1] ?? false} />
               <Milestone label="Post-warranty (20%)" released={pr?.milestoneReleased?.[2] ?? false} />
