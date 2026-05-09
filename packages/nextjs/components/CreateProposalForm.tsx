@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type Address, parseUnits } from "viem";
+import { type Address, namehash, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 const USDC_DECIMALS = 6;
@@ -11,15 +13,20 @@ const DEFAULT_WARRANTY_SECONDS = 60n; // tight for demo; production default woul
 
 type Props = {
   neighborhoodId: `0x${string}`;
+  city: string;
+  neighborhood: string;
 };
 
 /// Member-only form to create a proposal. Shows a "create" affordance once the user has joined.
-export function CreateProposalForm({ neighborhoodId }: Props) {
+export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props) {
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
   const [label, setLabel] = useState("proposal-solar");
   const [executor, setExecutor] = useState<string>("");
+  const [description, setDescription] = useState(
+    "Rooftop solar panels for our building. 4kW system, ~5 year payback, self-consumption + neighbor sharing per EU Clean Energy Package.",
+  );
   // Default executor to the connected wallet so solo testing skips manual paste.
   useEffect(() => {
     if (address && !executor) setExecutor(address);
@@ -38,15 +45,18 @@ export function CreateProposalForm({ neighborhoodId }: Props) {
   });
   const isMember = connectedNode && connectedNode !== ZERO_NODE;
 
-  const { writeContractAsync, isPending } = useScaffoldWriteContract({
+  const { writeContractAsync: createProposal, isPending } = useScaffoldWriteContract({
     contractName: "CommitmentPool",
+  });
+  const { writeContractAsync: setText } = useScaffoldWriteContract({
+    contractName: "HromadaRegistry",
   });
 
   if (!address || !isMember) return null;
 
   const submit = async () => {
     const deadline = BigInt(Math.floor(Date.now() / 1000) + Number(deadlineDays) * 86400);
-    await writeContractAsync({
+    await createProposal({
       functionName: "createProposal",
       args: [
         {
@@ -63,6 +73,13 @@ export function CreateProposalForm({ neighborhoodId }: Props) {
         },
       ],
     });
+    if (description.trim()) {
+      const proposalNode = namehash(`${label}.${neighborhood}.${city}.${PROTOCOL_ROOT}`);
+      await setText({
+        functionName: "setText",
+        args: [proposalNode, "description", description.trim()],
+      });
+    }
     setOpen(false);
   };
 
@@ -79,6 +96,15 @@ export function CreateProposalForm({ neighborhoodId }: Props) {
       <h3 className="font-semibold">New proposal</h3>
       <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
       <Field label="Executor address" value={executor} onChange={setExecutor} mono placeholder="0x…" />
+      <label className="block">
+        <span className="text-xs opacity-70">Description (saved as `description` text record)</span>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          rows={3}
+          className="textarea textarea-bordered textarea-sm w-full mt-1"
+        />
+      </label>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Target (EUR ≈ USDC)" value={targetEur} onChange={setTargetEur} />
         <Field label="Min members" value={minMembers} onChange={setMinMembers} />

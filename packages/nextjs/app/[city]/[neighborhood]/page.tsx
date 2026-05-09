@@ -86,7 +86,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
                 Proposals & Resources <span className="opacity-60 text-base">({resourceNodes?.length ?? 0})</span>
               </h2>
             </div>
-            <CreateProposalForm neighborhoodId={neighborhoodId} />
+            <CreateProposalForm neighborhoodId={neighborhoodId} city={city} neighborhood={neighborhood} />
             {!resourceNodes || resourceNodes.length === 0 ? (
               <p className="opacity-60 text-sm">No proposals yet.</p>
             ) : (

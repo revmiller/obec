@@ -30,6 +30,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
     args: [proposalNode],
   });
 
+  const { data: description } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getText",
+    args: [proposalNode, "description"],
+  });
+
   const { data: pool } = useDeployedContractInfo({ contractName: "CommitmentPool" });
 
   const loading = pr === undefined;
@@ -71,6 +77,8 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
           <div className="mt-4 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-base-300">
             {STATUS_LABEL[status] ?? "Unknown"}
           </div>
+
+          {description && <p className="mt-4 text-base opacity-90 max-w-2xl whitespace-pre-wrap">{description}</p>}
 
           <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-base-200 rounded-xl p-5">
