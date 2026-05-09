@@ -8,6 +8,7 @@ import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
+import { ResourceCard } from "~~/components/ResourceCard";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -120,6 +121,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
                 attestationCount={pr.attestationCount}
                 attestationThreshold={pr.attestationThreshold}
               />
+            </section>
+          )}
+
+          {pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}` && (
+            <section className="mt-8">
+              <ResourceCard resourceNode={pr.resourceNode as `0x${string}`} />
             </section>
           )}
 

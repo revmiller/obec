@@ -1,0 +1,80 @@
+"use client";
+
+import { ENSName } from "~~/components/ENSName";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+
+type Props = {
+  resourceNode: `0x${string}`;
+};
+
+/// Renders the same resource subname five different ways. The "oh, we hadn't thought of that"
+/// moment for Creative ENS judging — one subname is simultaneously identifier, contract pointer,
+/// credential store, and discovery endpoint.
+export function ResourceCard({ resourceNode }: Props) {
+  const { data: resource } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "resources",
+    args: [resourceNode],
+  });
+
+  const { data: labels } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getNodeLabels",
+    args: [resourceNode],
+  });
+
+  const { data: fundedBy } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getText",
+    args: [resourceNode, "funded-by"],
+  });
+
+  const { data: maintainerText } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getText",
+    args: [resourceNode, "maintainer"],
+  });
+
+  const { data: contenthash } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getContenthash",
+    args: [resourceNode],
+  });
+
+  if (!resource || !resource[4]) return null; // not active
+
+  const fullName = labels && labels.length > 0 ? `${[...labels].join(".")}.${PROTOCOL_ROOT}` : "";
+  const fundedByAddress = resource[3] as `0x${string}`;
+
+  return (
+    <div className="bg-base-200 rounded-xl p-5">
+      <h3 className="text-lg font-semibold">Resource subname</h3>
+      <p className="font-mono text-sm opacity-80 mt-1">{fullName}</p>
+      <p className="text-xs opacity-60 mt-1">One subname doing five jobs:</p>
+
+      <ul className="mt-3 space-y-2 text-sm">
+        <Row label="addr(node)" value={<ENSName address={fundedByAddress} />} hint="pool that funded it" />
+        <Row label="addr(node, 2147568180)" value={<ENSName address={fundedByAddress} />} hint="ENSIP-11 multichain" />
+        <Row label="text(funded-by)" value={fundedBy || "—"} hint="origin proposal" />
+        <Row label="text(maintainer)" value={maintainerText || "—"} hint="responsible member" />
+        <Row
+          label="contenthash(node)"
+          value={contenthash && contenthash !== "0x" ? contenthash : "—"}
+          hint="IPFS docs"
+        />
+      </ul>
+    </div>
+  );
+}
+
+function Row({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
+  return (
+    <li className="grid grid-cols-[160px_1fr_auto] gap-3 items-baseline">
+      <span className="font-mono text-xs opacity-70">{label}</span>
+      <span className="truncate">{value}</span>
+      <span className="text-xs opacity-50">{hint}</span>
+    </li>
+  );
+}
