@@ -51,8 +51,11 @@ contract Seed is Script {
 
         string[15] memory labels = _labels();
 
-        // -------- Phase 1: deployer creates the neighborhood --------
+        // -------- Phase 1: deployer creates the neighborhood + seeds federation cities --------
         vm.startBroadcast();
+        // Federation discovery: register the city list on the protocol root itself so external
+        // indexers can crawl the namespace via a single getText call on hromada.eth.
+        registry.setText(registry.PROTOCOL_ROOT_NAMEHASH(), "cities", CITY);
         bytes32 nbId = registry.createNeighborhood(CITY, NEIGHBORHOOD);
         registry.setText(
             nbId,
@@ -131,6 +134,19 @@ contract Seed is Script {
             vm.stopBroadcast();
         }
         console.log("8 attestations posted; milestone 1 fired");
+
+        // -------- Phase 6: pin a placeholder IPFS contenthash on the resource subname --------
+        // Production would upload the cargo bike booking guide + maintenance schedule to IPFS.
+        // Format: ENSIP-7 contenthash (e3 = ipfs-ns, dag-pb cidv1, sha-256, 32-byte digest).
+        CommitmentPool.Proposal memory pr = pool.getProposal(proposalNode);
+        vm.startBroadcast();
+        registry.setContenthash(
+            pr.resourceNode,
+            hex"e30101701220cafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe"
+        );
+        vm.stopBroadcast();
+        console.log("Resource contenthash pinned");
+
         console.log("Demo seed complete.");
     }
 
