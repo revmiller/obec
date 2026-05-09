@@ -37,7 +37,7 @@ contract CommitmentPool is ReentrancyGuard {
 
     struct Proposal {
         bytes32 neighborhoodId;
-        string  label;                  // "proposal-cargobikes"
+        string  label;                  // "proposal-cargo-bikes"
         address executor;
         uint256 targetAmount;
         uint256 minMembers;
@@ -269,7 +269,9 @@ contract CommitmentPool is ReentrancyGuard {
         if (pr.milestoneReleased[idx]) revert MilestoneAlreadyReleased();
         pr.milestoneReleased[idx] = true;
 
-        uint256 amount = (pr.targetAmount * _milestoneBps(idx)) / 10_000;
+        // Milestones split totalCommitted (target is the threshold to trigger; all committed
+        // funds flow to the executor over the three milestones). Avoids surplus dust.
+        uint256 amount = (pr.totalCommitted * _milestoneBps(idx)) / 10_000;
         usdc.safeTransfer(pr.executor, amount);
         emit MilestoneReleased(proposalNode, idx, amount);
     }

@@ -126,7 +126,8 @@ contract CommitmentPoolTest is Test {
         CommitmentPool.Proposal memory pr = pool.getProposal(pid);
         assertEq(uint8(pr.status), uint8(CommitmentPool.Status.Executing));
         assertTrue(pr.milestoneReleased[0]);
-        assertEq(usdc.balanceOf(jan) - janBefore, (TARGET * 30) / 100);
+        // Milestone 0 = 30% of totalCommitted (not target — so surplus over target isn't stuck).
+        assertEq(usdc.balanceOf(jan) - janBefore, (pr.totalCommitted * 30) / 100);
 
         // Resource subname should exist
         bytes32[] memory list = registry.getNeighborhoodResources(neighborhoodId);
@@ -136,7 +137,7 @@ contract CommitmentPoolTest is Test {
         // The resource node should equal the second registered (proposal first, resource second)
         bytes32 resourceNode = pr.resourceNode;
         assertTrue(resourceNode != bytes32(0));
-        assertEq(registry.getText(resourceNode, "funded-by"), "proposal-cargobikes");
+        assertEq(registry.getText(resourceNode, "funded-by"), "proposal-cargo-bikes");
         assertEq(registry.getText(resourceNode, "status"), "active");
         assertEq(registry.getText(resourceNode, "maintainer"), Strings.toHexString(jan));
     }
@@ -185,7 +186,7 @@ contract CommitmentPoolTest is Test {
 
         CommitmentPool.Proposal memory pr = pool.getProposal(pid);
         assertTrue(pr.milestoneReleased[1]);
-        assertEq(usdc.balanceOf(jan) - janBefore, (TARGET * 50) / 100);
+        assertEq(usdc.balanceOf(jan) - janBefore, (pr.totalCommitted * 50) / 100);
 
         // Attesters list is populated and the attestations text record anchors them
         // on the resource subname as a verifiable credential.
@@ -234,9 +235,10 @@ contract CommitmentPoolTest is Test {
 
         vm.warp(block.timestamp + WARRANTY + 1);
         uint256 janBefore = usdc.balanceOf(jan);
+        CommitmentPool.Proposal memory pr = pool.getProposal(pid);
         pool.claimWarrantyMilestone(pid);
 
-        assertEq(usdc.balanceOf(jan) - janBefore, (TARGET * 20) / 100);
+        assertEq(usdc.balanceOf(jan) - janBefore, (pr.totalCommitted * 20) / 100);
         assertEq(uint8(pool.status(pid)), uint8(CommitmentPool.Status.Completed));
     }
 
@@ -265,7 +267,7 @@ contract CommitmentPoolTest is Test {
     function _baseParams() internal view returns (CommitmentPool.CreateParams memory p) {
         p = CommitmentPool.CreateParams({
             neighborhoodId: neighborhoodId,
-            label: "proposal-cargobikes",
+            label: "proposal-cargo-bikes",
             executor: jan,
             targetAmount: TARGET,
             minMembers: MIN_MBRS,
