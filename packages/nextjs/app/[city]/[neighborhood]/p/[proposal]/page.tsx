@@ -7,6 +7,7 @@ import { namehash } from "viem/ens";
 import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
+import { ExecutorPanel } from "~~/components/ExecutorPanel";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -118,6 +119,18 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
                 proposalNode={proposalNode}
                 attestationCount={pr.attestationCount}
                 attestationThreshold={pr.attestationThreshold}
+              />
+            </section>
+          )}
+
+          {pr && (status === 2 || status === 3) && (
+            <section className="mt-8">
+              <ExecutorPanel
+                proposalNode={proposalNode}
+                executor={pr.executor as `0x${string}`}
+                milestoneReleased={pr.milestoneReleased}
+                attestedAt={pr.attestedAt}
+                warrantyDuration={pr.warrantyDuration}
               />
             </section>
           )}
