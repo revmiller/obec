@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { NextPage } from "next";
 import { MyMembership } from "~~/components/MyMembership";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 
@@ -16,6 +17,17 @@ const Home: NextPage = () => {
   const router = useRouter();
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
+
+  // Federation discovery — text(hromada.eth, "cities") tells external indexers which cities exist.
+  const { data: rootNamehash } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "PROTOCOL_ROOT_NAMEHASH",
+  });
+  const { data: federatedCities } = useScaffoldReadContract({
+    contractName: "HromadaRegistry",
+    functionName: "getText",
+    args: rootNamehash ? [rootNamehash, "cities"] : [undefined, undefined],
+  });
 
   const goCreate = () => {
     if (!city.trim() || !neighborhood.trim()) return;
@@ -33,6 +45,12 @@ const Home: NextPage = () => {
         <p className="mt-2 text-sm opacity-60">
           Protocol root: <code className="bg-base-300 px-1.5 py-0.5 rounded">{PROTOCOL_ROOT}</code>
         </p>
+        {federatedCities && (
+          <p className="mt-1 text-xs opacity-60">
+            Federated cities (from <code>text({PROTOCOL_ROOT}, &quot;cities&quot;)</code>):{" "}
+            <span className="font-mono">{federatedCities}</span>
+          </p>
+        )}
       </section>
 
       {/* How it works */}
