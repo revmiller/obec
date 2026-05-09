@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type Address, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
@@ -20,6 +20,10 @@ export function CreateProposalForm({ neighborhoodId }: Props) {
 
   const [label, setLabel] = useState("proposal-solar");
   const [executor, setExecutor] = useState<string>("");
+  // Default executor to the connected wallet so solo testing skips manual paste.
+  useEffect(() => {
+    if (address && !executor) setExecutor(address);
+  }, [address, executor]);
   const [targetEur, setTargetEur] = useState("8000");
   const [minMembers, setMinMembers] = useState("14");
   const [attestationThreshold, setAttestationThreshold] = useState("8");

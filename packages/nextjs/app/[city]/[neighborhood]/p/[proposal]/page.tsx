@@ -32,8 +32,9 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
 
   const { data: pool } = useDeployedContractInfo({ contractName: "CommitmentPool" });
 
+  const loading = pr === undefined;
   const status = Number(pr?.status ?? 0);
-  const exists = status !== 0;
+  const exists = !loading && status !== 0;
 
   const target = pr?.targetAmount ?? 0n;
   const committed = pr?.totalCommitted ?? 0n;
@@ -58,7 +59,9 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
       <h1 className="text-3xl font-bold mt-2 capitalize">{proposal.replace(/-/g, " ")}</h1>
       <p className="font-mono text-sm opacity-70 mt-1">{fullName}</p>
 
-      {!exists ? (
+      {loading ? (
+        <div className="mt-10 opacity-50 text-sm">Loading…</div>
+      ) : !exists ? (
         <div className="mt-10 p-6 bg-base-200 rounded-xl">
           <p className="text-lg">This proposal doesn&apos;t exist yet.</p>
           <p className="text-sm opacity-70 mt-2">A neighborhood member can create it from the neighborhood page.</p>
