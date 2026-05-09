@@ -7,6 +7,8 @@ import { CreateNeighborhoodButton } from "~~/components/CreateNeighborhoodButton
 import { CreateProposalForm } from "~~/components/CreateProposalForm";
 import { ENSName } from "~~/components/ENSName";
 import { JoinNeighborhoodButton } from "~~/components/JoinNeighborhoodButton";
+import { MemberRow } from "~~/components/MemberRow";
+import { ResourceRow } from "~~/components/ResourceRow";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -72,9 +74,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
             ) : (
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {memberNodes.map(node => (
-                  <li key={node} className="font-mono text-xs opacity-70 truncate">
-                    {node}
-                  </li>
+                  <MemberRow key={node} node={node as `0x${string}`} />
                 ))}
               </ul>
             )}
@@ -92,9 +92,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
             ) : (
               <ul className="grid grid-cols-1 gap-2">
                 {resourceNodes.map(node => (
-                  <li key={node} className="font-mono text-xs opacity-70 truncate">
-                    {node}
-                  </li>
+                  <ResourceRow key={node} node={node as `0x${string}`} city={city} neighborhood={neighborhood} />
                 ))}
               </ul>
             )}
