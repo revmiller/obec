@@ -5,6 +5,7 @@ import { type Address, erc20Abi, maxUint256, parseUnits } from "viem";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { MintTestUSDC } from "~~/components/MintTestUSDC";
+import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const USDC_DECIMALS = 6;
@@ -75,49 +76,51 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
   };
 
   return (
-    <div className="bg-base-200 rounded-xl p-5 space-y-4">
-      <div className="flex items-baseline justify-between">
-        <h3 className="font-semibold">Commit funds</h3>
-        <MintTestUSDC />
-      </div>
+    <NetworkGuard targetChainId={84532}>
+      <div className="bg-base-200 rounded-xl p-5 space-y-4">
+        <div className="flex items-baseline justify-between">
+          <h3 className="font-semibold">Commit funds</h3>
+          <MintTestUSDC />
+        </div>
 
-      <label className="block">
-        <span className="text-xs opacity-70">Amount (USDC)</span>
-        <input
-          type="number"
-          value={usdInput}
-          onChange={e => setUsdInput(e.target.value)}
-          className="input input-bordered input-sm w-full mt-1"
-        />
-      </label>
+        <label className="block">
+          <span className="text-xs opacity-70">Amount (USDC)</span>
+          <input
+            type="number"
+            value={usdInput}
+            onChange={e => setUsdInput(e.target.value)}
+            className="input input-bordered input-sm w-full mt-1"
+          />
+        </label>
 
-      {/* Anti-blind-signing: plain-language summary of what's about to happen */}
-      <div className="text-sm bg-base-100 rounded-lg p-3 border border-base-300">
-        <p>
-          You&apos;re committing <strong>${usdInput || 0} USDC</strong>.
-        </p>
-        <p className="mt-1 opacity-80">
-          If the proposal&apos;s target isn&apos;t reached by the deadline, you&apos;ll be{" "}
-          <strong>automatically refunded</strong>.
-        </p>
-        {needsApproval && (
-          <p className="mt-2 opacity-70 text-xs">Two transactions: (1) approve USDC, (2) commit funds.</p>
+        {/* Anti-blind-signing: plain-language summary of what's about to happen */}
+        <div className="text-sm bg-base-100 rounded-lg p-3 border border-base-300">
+          <p>
+            You&apos;re committing <strong>${usdInput || 0} USDC</strong>.
+          </p>
+          <p className="mt-1 opacity-80">
+            If the proposal&apos;s target isn&apos;t reached by the deadline, you&apos;ll be{" "}
+            <strong>automatically refunded</strong>.
+          </p>
+          {needsApproval && (
+            <p className="mt-2 opacity-70 text-xs">Two transactions: (1) approve USDC, (2) commit funds.</p>
+          )}
+        </div>
+
+        {needsApproval ? (
+          <button
+            className="btn btn-primary btn-sm w-full"
+            disabled={approving || approveConfirming || amount === 0n}
+            onClick={onApprove}
+          >
+            {approving || approveConfirming ? "Approving USDC…" : "1 — Approve USDC"}
+          </button>
+        ) : (
+          <button className="btn btn-primary btn-sm w-full" disabled={committing || amount === 0n} onClick={onCommit}>
+            {committing ? "Committing…" : `Commit $${usdInput || 0}`}
+          </button>
         )}
       </div>
-
-      {needsApproval ? (
-        <button
-          className="btn btn-primary btn-sm w-full"
-          disabled={approving || approveConfirming || amount === 0n}
-          onClick={onApprove}
-        >
-          {approving || approveConfirming ? "Approving USDC…" : "1 — Approve USDC"}
-        </button>
-      ) : (
-        <button className="btn btn-primary btn-sm w-full" disabled={committing || amount === 0n} onClick={onCommit}>
-          {committing ? "Committing…" : `Commit $${usdInput || 0}`}
-        </button>
-      )}
-    </div>
+    </NetworkGuard>
   );
 }

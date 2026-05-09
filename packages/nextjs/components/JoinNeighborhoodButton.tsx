@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAccount } from "wagmi";
+import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
@@ -28,21 +29,23 @@ export function JoinNeighborhoodButton({ neighborhoodId }: { neighborhoodId: `0x
   }
 
   return (
-    <div className="mt-4 flex items-center gap-2">
-      <input
-        type="text"
-        placeholder="your-name"
-        value={label}
-        onChange={e => setLabel(e.target.value.trim().toLowerCase())}
-        className="input input-bordered input-sm"
-      />
-      <button
-        className="btn btn-primary btn-sm"
-        disabled={isPending || !label}
-        onClick={() => writeContractAsync({ functionName: "joinNeighborhood", args: [neighborhoodId, label] })}
-      >
-        {isPending ? "Joining…" : "Join"}
-      </button>
-    </div>
+    <NetworkGuard targetChainId={84532}>
+      <div className="mt-4 flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="your-name"
+          value={label}
+          onChange={e => setLabel(e.target.value.trim().toLowerCase())}
+          className="input input-bordered input-sm"
+        />
+        <button
+          className="btn btn-primary btn-sm"
+          disabled={isPending || !label}
+          onClick={() => writeContractAsync({ functionName: "joinNeighborhood", args: [neighborhoodId, label] })}
+        >
+          {isPending ? "Joining…" : "Join"}
+        </button>
+      </div>
+    </NetworkGuard>
   );
 }

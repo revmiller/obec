@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { type Address, namehash, parseUnits } from "viem";
 import { useAccount } from "wagmi";
+import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -92,36 +93,38 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   }
 
   return (
-    <div className="mt-4 p-5 bg-base-200 rounded-xl space-y-3">
-      <h3 className="font-semibold">New proposal</h3>
-      <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
-      <Field label="Executor address" value={executor} onChange={setExecutor} mono placeholder="0x…" />
-      <label className="block">
-        <span className="text-xs opacity-70">Description (saved as `description` text record)</span>
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          rows={3}
-          className="textarea textarea-bordered textarea-sm w-full mt-1"
-        />
-      </label>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Target (USD ≈ USDC)" value={targetEur} onChange={setTargetEur} />
-        <Field label="Min members" value={minMembers} onChange={setMinMembers} />
-        <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
-        <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />
-        <Field label="Resource label" value={resourceLabel} onChange={setResourceLabel} mono />
-        <Field label="Resource type" value={resourceType} onChange={setResourceType} />
+    <NetworkGuard targetChainId={84532}>
+      <div className="mt-4 p-5 bg-base-200 rounded-xl space-y-3">
+        <h3 className="font-semibold">New proposal</h3>
+        <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
+        <Field label="Executor address" value={executor} onChange={setExecutor} mono placeholder="0x…" />
+        <label className="block">
+          <span className="text-xs opacity-70">Description (saved as `description` text record)</span>
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={3}
+            className="textarea textarea-bordered textarea-sm w-full mt-1"
+          />
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="Target (USD ≈ USDC)" value={targetEur} onChange={setTargetEur} />
+          <Field label="Min members" value={minMembers} onChange={setMinMembers} />
+          <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
+          <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />
+          <Field label="Resource label" value={resourceLabel} onChange={setResourceLabel} mono />
+          <Field label="Resource type" value={resourceType} onChange={setResourceType} />
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-primary btn-sm" disabled={isPending || !executor} onClick={submit}>
+            {isPending ? "Creating…" : "Create proposal"}
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
+            Cancel
+          </button>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <button className="btn btn-primary btn-sm" disabled={isPending || !executor} onClick={submit}>
-          {isPending ? "Creating…" : "Create proposal"}
-        </button>
-        <button className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
-          Cancel
-        </button>
-      </div>
-    </div>
+    </NetworkGuard>
   );
 }
 
