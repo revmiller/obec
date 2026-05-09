@@ -1,73 +1,49 @@
 "use client";
 
 import Link from "next/link";
-import { Address } from "@scaffold-ui/components";
 import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+
+// For v1, the home page is a directory of known neighborhoods. As the protocol
+// scales, this would index from events / The Graph. For the demo it's hardcoded.
+const SEEDED_NEIGHBORHOODS = [{ city: "prague", neighborhood: "vinohrady", country: "Czech Republic" }];
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
-
   return (
-    <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} chain={targetNetwork} />
-          </div>
+    <div className="flex flex-col grow">
+      <section className="px-6 py-16 max-w-4xl mx-auto">
+        <h1 className="text-5xl font-bold tracking-tight">Hromada.</h1>
+        <p className="mt-4 text-xl opacity-80 max-w-2xl">
+          Neighbors pool funds for shared resources — solar, retrofits, tools — with auto-refund if not enough commit.
+          Identity, credentials, and resource registry all live in ENS subnames.
+        </p>
+        <p className="mt-2 text-sm opacity-60">
+          Protocol root: <code className="bg-base-300 px-1.5 py-0.5 rounded">{PROTOCOL_ROOT}</code>
+        </p>
+      </section>
 
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+      <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
+        <h2 className="text-2xl font-semibold mb-4">Neighborhoods</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {SEEDED_NEIGHBORHOODS.map(n => (
+            <Link
+              key={`${n.city}/${n.neighborhood}`}
+              href={`/${n.city}/${n.neighborhood}`}
+              className="block p-5 rounded-xl bg-base-200 hover:bg-base-300 transition border border-base-300"
+            >
+              <div className="font-semibold capitalize">{n.neighborhood}</div>
+              <div className="text-sm opacity-70 capitalize">
+                {n.city} · {n.country}
+              </div>
+              <div className="text-xs opacity-50 mt-2 font-mono">
+                {n.neighborhood}.{n.city}.{PROTOCOL_ROOT}
+              </div>
+            </Link>
+          ))}
         </div>
-
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 };
 
