@@ -8,6 +8,7 @@ import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
+import { MyCommitment } from "~~/components/MyCommitment";
 import { ResourceCard } from "~~/components/ResourceCard";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
@@ -111,6 +112,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
           {pool?.address && status === 1 /* Active */ && (
             <section className="mt-8">
               <CommitForm proposalNode={proposalNode} poolAddress={pool.address} />
+            </section>
+          )}
+
+          {pr && (
+            <section className="mt-8">
+              <MyCommitment proposalNode={proposalNode} status={status} deadline={pr.deadline} />
             </section>
           )}
 
