@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { type Address, erc20Abi, maxUint256, parseUnits } from "viem";
-import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { MintTestUSDC } from "~~/components/MintTestUSDC";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
@@ -10,11 +10,7 @@ import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContr
 const USDC_DECIMALS = 6;
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 
-// Per-chain USDC address (Base Sepolia uses Circle's testnet USDC; localhost falls back to MockUSDC).
-function usdcAddressForChain(chainId: number, mockAddress: Address | undefined): Address | undefined {
-  if (chainId === 84532) return "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
-  return mockAddress;
-}
+// MockUSDC on every chain (deployed alongside Registry/Pool) so demo wallets can mint freely.
 
 type Props = {
   proposalNode: `0x${string}`;
@@ -27,11 +23,10 @@ type Props = {
 /// summary and the wallet handles the actual signing.
 export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props) {
   const { address } = useAccount();
-  const chainId = useChainId();
   const [eurInput, setEurInput] = useState("530");
 
   const { data: mockUsdc } = useDeployedContractInfo({ contractName: "MockUSDC" });
-  const usdcAddress = usdcAddressForChain(chainId, mockUsdc?.address as Address | undefined);
+  const usdcAddress = mockUsdc?.address as Address | undefined;
 
   const amount = (() => {
     try {
