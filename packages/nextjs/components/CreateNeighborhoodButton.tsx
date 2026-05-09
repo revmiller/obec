@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccount } from "wagmi";
+import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 export function CreateNeighborhoodButton({ city, neighborhood }: { city: string; neighborhood: string }) {
@@ -10,7 +11,11 @@ export function CreateNeighborhoodButton({ city, neighborhood }: { city: string;
   });
 
   if (!address) {
-    return <p className="mt-4 text-sm opacity-60">Connect a wallet to create this neighborhood.</p>;
+    return (
+      <div className="mt-4">
+        <ConnectPrompt message="Connect a wallet to create this neighborhood." />
+      </div>
+    );
   }
 
   return (

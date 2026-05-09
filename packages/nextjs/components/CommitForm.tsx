@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { type Address, erc20Abi, maxUint256, parseUnits } from "viem";
 import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { MintTestUSDC } from "~~/components/MintTestUSDC";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
@@ -66,7 +67,7 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
     contractName: "CommitmentPool",
   });
 
-  if (!address) return <p className="opacity-60 text-sm">Connect a wallet to commit.</p>;
+  if (!address) return <ConnectPrompt message="Connect a wallet to commit funds." />;
   if (!isMember) return <p className="opacity-60 text-sm">Only neighborhood members can commit.</p>;
   if (!enabled) return null;
   if (!usdcAddress) return <p className="opacity-60 text-sm">USDC not configured for this chain.</p>;

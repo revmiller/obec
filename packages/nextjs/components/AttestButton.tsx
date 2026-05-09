@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccount } from "wagmi";
+import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 type Props = {
@@ -24,6 +25,8 @@ export function AttestButton({ proposalNode, attestationCount, attestationThresh
 
   const remaining = attestationThreshold > attestationCount ? attestationThreshold - attestationCount : 0n;
 
+  if (!address) return <ConnectPrompt message="Connect a wallet to confirm completion." />;
+
   return (
     <div className="bg-base-200 rounded-xl p-5 space-y-3">
       <h3 className="font-semibold">Confirm work completed</h3>
@@ -33,16 +36,10 @@ export function AttestButton({ proposalNode, attestationCount, attestationThresh
       </p>
       <button
         className="btn btn-primary btn-sm"
-        disabled={!address || isPending || alreadyAttested === true}
+        disabled={isPending || alreadyAttested === true}
         onClick={() => writeContractAsync({ functionName: "attest", args: [proposalNode] })}
       >
-        {!address
-          ? "Connect to confirm"
-          : alreadyAttested
-            ? "Already confirmed"
-            : isPending
-              ? "Confirming…"
-              : "Confirm completion"}
+        {alreadyAttested ? "Already confirmed" : isPending ? "Confirming…" : "Confirm completion"}
       </button>
     </div>
   );
