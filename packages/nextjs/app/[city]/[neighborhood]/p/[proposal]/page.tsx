@@ -10,6 +10,7 @@ import { ENSName } from "~~/components/ENSName";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
 import { MyCommitment } from "~~/components/MyCommitment";
 import { ResourceCard } from "~~/components/ResourceCard";
+import { ShareButton } from "~~/components/ShareButton";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -71,8 +72,13 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold mt-2 capitalize">{proposal.replace(/-/g, " ")}</h1>
-      <p className="font-mono text-sm opacity-70 mt-1">{fullName}</p>
+      <div className="flex items-start justify-between gap-4 mt-2">
+        <div>
+          <h1 className="text-3xl font-bold capitalize">{proposal.replace(/-/g, " ")}</h1>
+          <p className="font-mono text-sm opacity-70 mt-1">{fullName}</p>
+        </div>
+        {exists && <ShareButton label="Share with neighbors" />}
+      </div>
 
       {loading ? (
         <div className="mt-10 opacity-50 text-sm">Loading…</div>
