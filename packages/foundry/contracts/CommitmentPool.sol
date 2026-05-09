@@ -37,7 +37,7 @@ contract CommitmentPool is ReentrancyGuard {
 
     struct Proposal {
         bytes32 neighborhoodId;
-        string  label;                  // "proposal-solar"
+        string  label;                  // "proposal-cargobikes"
         address executor;
         uint256 targetAmount;
         uint256 minMembers;
@@ -50,7 +50,7 @@ contract CommitmentPool is ReentrancyGuard {
         uint256 attestationCount;
         Status  status;
         // Auto-resource creation params:
-        string  resourceLabel;          // "solar-array"
+        string  resourceLabel;          // "cargo-bikes"
         string  resourceType;           // "energy"
         bytes32 resourceNode;           // populated on funding
         // Milestone tracking:

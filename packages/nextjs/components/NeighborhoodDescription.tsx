@@ -71,7 +71,7 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
         value={draft}
         onChange={e => setDraft(e.target.value)}
         rows={3}
-        placeholder="What does this neighborhood do? (e.g. 15 households cooperating on rooftop solar and bulk renovation.)"
+        placeholder="What does this neighborhood do? (e.g. 15 households cooperating on shared cargo bikes, retrofits, and tools.)"
         className="textarea textarea-bordered textarea-sm w-full"
       />
       <div className="flex gap-2">

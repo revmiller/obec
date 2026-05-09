@@ -22,10 +22,10 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
-  const [label, setLabel] = useState("proposal-solar");
+  const [label, setLabel] = useState("proposal-cargobikes");
   const [executor, setExecutor] = useState<string>("");
   const [description, setDescription] = useState(
-    "Rooftop solar panels for our building. 4kW system, ~5 year payback, self-consumption + neighbor sharing per EU Clean Energy Package.",
+    "Two e-cargo bikes for our building. 14 households share unlimited access via key cabinet + booking calendar. Replaces ~80% of family car trips for groceries, school runs, and hardware store hauls.",
   );
   // Default executor to the connected wallet so solo testing skips manual paste.
   useEffect(() => {
@@ -35,8 +35,8 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const [minMembers, setMinMembers] = useState("14");
   const [attestationThreshold, setAttestationThreshold] = useState("8");
   const [deadlineDays, setDeadlineDays] = useState("30");
-  const [resourceLabel, setResourceLabel] = useState("solar-array");
-  const [resourceType, setResourceType] = useState("energy");
+  const [resourceLabel, setResourceLabel] = useState("cargo-bikes");
+  const [resourceType, setResourceType] = useState("mobility");
 
   const { data: connectedNode } = useScaffoldReadContract({
     contractName: "HromadaRegistry",
@@ -106,7 +106,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
         />
       </label>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Target (EUR ≈ USDC)" value={targetEur} onChange={setTargetEur} />
+        <Field label="Target (USD ≈ USDC)" value={targetEur} onChange={setTargetEur} />
         <Field label="Min members" value={minMembers} onChange={setMinMembers} />
         <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
         <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />

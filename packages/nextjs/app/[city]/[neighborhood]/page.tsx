@@ -75,8 +75,8 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
               <p className="opacity-60 text-sm">No members yet.</p>
             ) : (
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {memberNodes.map(node => (
-                  <MemberRow key={node} node={node as `0x${string}`} />
+                {memberNodes.map((node: `0x${string}`) => (
+                  <MemberRow key={node} node={node} />
                 ))}
               </ul>
             )}

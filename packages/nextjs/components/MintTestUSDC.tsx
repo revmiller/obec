@@ -5,7 +5,7 @@ import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const USDC_DECIMALS = 6;
-const MINT_AMOUNT = parseUnits("10000", USDC_DECIMALS); // €10k worth
+const MINT_AMOUNT = parseUnits("10000", USDC_DECIMALS); // $10k worth
 
 /// Mints MockUSDC to the connected wallet. Available on any chain where MockUSDC is deployed.
 export function MintTestUSDC() {
@@ -50,7 +50,7 @@ export function MintTestUSDC() {
     <div className="text-xs opacity-70">
       No USDC?{" "}
       <button onClick={onMint} disabled={isPending} className="underline hover:opacity-100">
-        {isPending ? "Minting…" : "Mint €10,000 test USDC"}
+        {isPending ? "Minting…" : "Mint $10,000 test USDC"}
       </button>
     </div>
   );

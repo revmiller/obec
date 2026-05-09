@@ -23,14 +23,14 @@ type Props = {
 /// summary and the wallet handles the actual signing.
 export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props) {
   const { address } = useAccount();
-  const [eurInput, setEurInput] = useState("530");
+  const [usdInput, setUsdInput] = useState("530");
 
   const { data: mockUsdc } = useDeployedContractInfo({ contractName: "MockUSDC" });
   const usdcAddress = mockUsdc?.address as Address | undefined;
 
   const amount = (() => {
     try {
-      return parseUnits(eurInput || "0", USDC_DECIMALS);
+      return parseUnits(usdInput || "0", USDC_DECIMALS);
     } catch {
       return 0n;
     }
@@ -82,11 +82,11 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
       </div>
 
       <label className="block">
-        <span className="text-xs opacity-70">Amount (EUR ≈ USDC)</span>
+        <span className="text-xs opacity-70">Amount (USDC)</span>
         <input
           type="number"
-          value={eurInput}
-          onChange={e => setEurInput(e.target.value)}
+          value={usdInput}
+          onChange={e => setUsdInput(e.target.value)}
           className="input input-bordered input-sm w-full mt-1"
         />
       </label>
@@ -94,11 +94,7 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
       {/* Anti-blind-signing: plain-language summary of what's about to happen */}
       <div className="text-sm bg-base-100 rounded-lg p-3 border border-base-300">
         <p>
-          You&apos;re committing{" "}
-          <strong>
-            €{eurInput || 0} ({eurInput || 0} USDC)
-          </strong>
-          .
+          You&apos;re committing <strong>${usdInput || 0} USDC</strong>.
         </p>
         <p className="mt-1 opacity-80">
           If the proposal&apos;s target isn&apos;t reached by the deadline, you&apos;ll be{" "}
@@ -119,7 +115,7 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
         </button>
       ) : (
         <button className="btn btn-primary btn-sm w-full" disabled={committing || amount === 0n} onClick={onCommit}>
-          {committing ? "Committing…" : `Commit €${eurInput || 0}`}
+          {committing ? "Committing…" : `Commit $${usdInput || 0}`}
         </button>
       )}
     </div>

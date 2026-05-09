@@ -113,17 +113,17 @@ contract HromadaRegistryTest is Test {
 
         vm.prank(eve);
         vm.expectRevert(HromadaRegistry.NotPool.selector);
-        registry.registerResource(id, "solar-array", "energy", pool);
+        registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         vm.prank(pool);
-        bytes32 resourceNode = registry.registerResource(id, "solar-array", "energy", pool);
+        bytes32 resourceNode = registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         bytes32[] memory list = registry.getNeighborhoodResources(id);
         assertEq(list.length, 1);
         assertEq(list[0], resourceNode);
 
         string[] memory labels = registry.getNodeLabels(resourceNode);
-        assertEq(labels[0], "solar-array");
+        assertEq(labels[0], "cargo-bikes");
         assertEq(labels[1], "vinohrady");
         assertEq(labels[2], "prague");
     }
@@ -155,8 +155,8 @@ contract HromadaRegistryTest is Test {
     function test_setText_poolAlwaysAllowed() public {
         (, bytes32 annaNode) = _seedNeighborhoodWithAnna();
         vm.prank(pool);
-        registry.setText(annaNode, "funded-by", "proposal-solar");
-        assertEq(registry.getText(annaNode, "funded-by"), "proposal-solar");
+        registry.setText(annaNode, "funded-by", "proposal-cargobikes");
+        assertEq(registry.getText(annaNode, "funded-by"), "proposal-cargobikes");
     }
 
     // -------- setContenthash --------
@@ -164,7 +164,7 @@ contract HromadaRegistryTest is Test {
     function test_setContenthash_byPool() public {
         bytes32 id = _seedNeighborhood();
         vm.prank(pool);
-        bytes32 resourceNode = registry.registerResource(id, "solar-array", "energy", pool);
+        bytes32 resourceNode = registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         bytes memory hash = hex"e30101701220000000000000000000000000000000000000000000000000000000000000beef";
         vm.prank(pool);
@@ -175,7 +175,7 @@ contract HromadaRegistryTest is Test {
     function test_setContenthash_strangerReverts() public {
         bytes32 id = _seedNeighborhood();
         vm.prank(pool);
-        bytes32 resourceNode = registry.registerResource(id, "solar-array", "energy", pool);
+        bytes32 resourceNode = registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         vm.prank(eve);
         vm.expectRevert(HromadaRegistry.Unauthorized.selector);

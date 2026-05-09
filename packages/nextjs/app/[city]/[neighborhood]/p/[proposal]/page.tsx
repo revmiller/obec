@@ -102,11 +102,11 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
           <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-base-200 rounded-xl p-5">
               <div className="text-sm opacity-70">Pool target</div>
-              <div className="text-3xl font-semibold mt-1">€{formatUnits(target, USDC_DECIMALS)}</div>
+              <div className="text-3xl font-semibold mt-1">${formatUnits(target, USDC_DECIMALS)}</div>
               <div className="text-xs opacity-60 mt-0.5">{formatUnits(target, USDC_DECIMALS)} USDC</div>
 
               <div className="mt-5 flex items-baseline justify-between">
-                <div className="text-2xl font-semibold">€{formatUnits(committed, USDC_DECIMALS)}</div>
+                <div className="text-2xl font-semibold">${formatUnits(committed, USDC_DECIMALS)}</div>
                 <div className="text-sm opacity-70">{progress}% committed</div>
               </div>
               <div className="mt-2 w-full h-3 rounded-full bg-base-300 overflow-hidden">

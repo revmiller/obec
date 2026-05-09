@@ -47,8 +47,7 @@ export function MyCommitment({ proposalNode, status, deadline }: Props) {
     <div className="bg-base-200 rounded-xl p-5 space-y-3">
       <h3 className="font-semibold">Your stake</h3>
       <p className="text-sm">
-        You&apos;ve committed <strong>€{formatUnits(amt, USDC_DECIMALS)}</strong> ({formatUnits(amt, USDC_DECIMALS)}{" "}
-        USDC).
+        You&apos;ve committed <strong>${formatUnits(amt, USDC_DECIMALS)} USDC</strong>.
       </p>
 
       {canWithdraw && (

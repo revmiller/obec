@@ -29,7 +29,7 @@ contract HromadaRegistry {
 
     struct Resource {
         bytes32 neighborhoodId;
-        string label;           // "solar-array"
+        string label;           // "cargo-bikes"
         string resourceType;    // "energy", "tool", "space"
         address fundedBy;       // pool address
         bool active;

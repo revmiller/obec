@@ -27,8 +27,8 @@ contract CommitmentPoolTest is Test {
 
     bytes32 neighborhoodId;
 
-    uint256 constant TARGET   = 8_000 * 1e6; // €8000 in USDC (6 decimals)
-    uint256 constant PER_MBR  = 600  * 1e6;  // €600 each
+    uint256 constant TARGET   = 8_000 * 1e6; // 8000 USDC (6 decimals)
+    uint256 constant PER_MBR  = 600  * 1e6;  // 600 USDC each
     uint256 constant MIN_MBRS = 14;
     uint64  constant WARRANTY = 60;          // 60s warranty for tests
 
@@ -136,7 +136,7 @@ contract CommitmentPoolTest is Test {
         // The resource node should equal the second registered (proposal first, resource second)
         bytes32 resourceNode = pr.resourceNode;
         assertTrue(resourceNode != bytes32(0));
-        assertEq(registry.getText(resourceNode, "funded-by"), "proposal-solar");
+        assertEq(registry.getText(resourceNode, "funded-by"), "proposal-cargobikes");
         assertEq(registry.getText(resourceNode, "status"), "active");
         assertEq(registry.getText(resourceNode, "maintainer"), Strings.toHexString(jan));
     }
@@ -265,15 +265,15 @@ contract CommitmentPoolTest is Test {
     function _baseParams() internal view returns (CommitmentPool.CreateParams memory p) {
         p = CommitmentPool.CreateParams({
             neighborhoodId: neighborhoodId,
-            label: "proposal-solar",
+            label: "proposal-cargobikes",
             executor: jan,
             targetAmount: TARGET,
             minMembers: MIN_MBRS,
             deadline: uint64(block.timestamp + 30 days),
             warrantyDuration: WARRANTY,
             attestationThreshold: 8,
-            resourceLabel: "solar-array",
-            resourceType: "energy"
+            resourceLabel: "cargo-bikes",
+            resourceType: "mobility"
         });
     }
 

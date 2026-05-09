@@ -27,8 +27,8 @@ const Home: NextPage = () => {
       <section className="px-6 py-16 max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold tracking-tight">Hromada.</h1>
         <p className="mt-4 text-xl opacity-80 max-w-2xl">
-          Neighbors pool funds for shared resources — solar, retrofits, tools — with auto-refund if not enough commit.
-          Identity, credentials, and resource registry all live in ENS subnames.
+          Neighbors pool funds for shared resources — cargo bikes, retrofits, tools — with auto-refund if not enough
+          commit. Identity, credentials, and resource registry all live in ENS subnames.
         </p>
         <p className="mt-2 text-sm opacity-60">
           Protocol root: <code className="bg-base-300 px-1.5 py-0.5 rounded">{PROTOCOL_ROOT}</code>
@@ -42,7 +42,7 @@ const Home: NextPage = () => {
           <Step
             n={1}
             title="Propose"
-            body="Any member posts a project — solar panels, building insulation, a shared tool — with a target amount, deadline, and minimum number of neighbors."
+            body="Any member posts a project — a cargo bike fleet, building insulation, a shared tool — with a target amount, deadline, and minimum number of neighbors."
           />
           <Step
             n={2}
