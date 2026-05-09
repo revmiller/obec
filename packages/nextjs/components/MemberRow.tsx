@@ -1,6 +1,5 @@
 "use client";
 
-import { ENSName } from "~~/components/ENSName";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
@@ -26,8 +25,8 @@ export function MemberRow({ node }: { node: `0x${string}` }) {
   return (
     <li className="bg-base-200 rounded-lg p-3">
       <div className="font-mono text-sm">{name}</div>
-      <div className="text-xs opacity-60 mt-1">
-        <ENSName address={wallet} />
+      <div className="font-mono text-xs opacity-60 mt-1" title={wallet}>
+        {wallet.slice(0, 6)}…{wallet.slice(-4)}
       </div>
     </li>
   );
