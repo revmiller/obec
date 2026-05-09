@@ -159,6 +159,18 @@ contract HromadaRegistryTest is Test {
         assertEq(registry.getText(annaNode, "funded-by"), "proposal-cargobikes");
     }
 
+    function test_setText_ownerCanSetOnRoot() public {
+        bytes32 root = registry.PROTOCOL_ROOT_NAMEHASH();
+        // admin is the registry owner (constructor recorded msg.sender).
+        vm.prank(admin);
+        registry.setText(root, "cities", "prague");
+        assertEq(registry.getText(root, "cities"), "prague");
+
+        vm.prank(eve);
+        vm.expectRevert(HromadaRegistry.Unauthorized.selector);
+        registry.setText(root, "cities", "berlin");
+    }
+
     // -------- setContenthash --------
 
     function test_setContenthash_byPool() public {

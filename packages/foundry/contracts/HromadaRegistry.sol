@@ -180,6 +180,9 @@ contract HromadaRegistry {
 
     function _canModify(bytes32 node, address caller) internal view returns (bool) {
         if (caller == commitmentPool) return true;
+        // Registry owner can write on the protocol root itself (e.g. text(hromada.eth, "cities")
+        // for federation discovery — frames the root as an ENS-native data structure).
+        if (node == PROTOCOL_ROOT_NAMEHASH && caller == owner) return true;
         Member memory m = members[node];
         if (m.active) {
             if (m.wallet == caller) return true;
