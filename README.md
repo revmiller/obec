@@ -1,37 +1,177 @@
 # Hromada
 
-**A neighborhood commons protocol.**
+**ENS-native protocol for neighborhood commons.** Neighbors pool USDC for shared physical resources via threshold-commit smart contracts. **Auto-refund if the fundraise falls short**; milestone-released escrow if it succeeds, with attestation-gated payouts. ENS subnames serve as identity, credentials, resource registry, multichain payment rails, and IPFS doc roots.
 
-Neighbors pool funds for shared physical resources — solar panels, retrofits, tool libraries, bulk purchasing — using threshold-commit smart contracts with auto-refund. ENS subnames serve as identity, resource registry, credentials, and discovery. The naming hierarchy mirrors real-world geography: `anna.vinohrady.prague.hromada.eth`.
+The naming hierarchy mirrors real-world geography:
 
-> _hromada_ — Ukrainian for community self-governance.
+```
+anna.vinohrady.prague.hromada.eth
+└──┴────────┴──────┴───────────── member . neighborhood . city . protocol root
+```
 
-## Stack
+Built for **ETHPrague 2026**.
 
-- **Contracts**: Foundry, deployed to Base Sepolia (data) + Sepolia (ENS resolver)
-- **Frontend**: Next.js + wagmi v2 + viem v2 (Scaffold-ETH 2 monorepo)
-- **CCIP-Read gateway**: Next.js API route at `/api/ccip/[sender]/[callData]`
-- **Settlement**: USDC on Base Sepolia
-- **ENS**: ENSIP-10 wildcard + EIP-3668 CCIP-Read + ENSIP-9/11 multi-coin + ENSIP-7 contenthash
+🌐 **Live demo**: wip
 
-## Status
+---
 
-Built for ETHPrague 2026 hackathon.
+We treat ENS as a programmable, cross-chain registry that a state machine on L2 writes to as the protocol changes — and any wallet on mainnet can read those changes through CCIP-Read with cryptographic guarantees.
+
+Concrete instances of *ENS doing real work, not display*:
+
+1. **The state machine writes ENS as it executes.** When a proposal hits its threshold, the pool atomically (a) creates a new ENS subname for the resource, (b) writes `funded-by` / `status` / `maintainer` text records, and (c) releases milestone 0. ENS is *part* of the state machine, not metadata about it.
+2. **Subnames are functional addresses.** `addr(resourceNode)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.hromada.eth` lands funds in the right escrow on the right chain. The name *is* the route.
+3. **Subnames as ACL.** Membership in the namespace = permission to modify it. `_canModify` checks ENS-derived membership.
+4. **Multi-coin per subname.** `addr(node, 2147568180)` returns the Base Sepolia address; `addr(node, 60)` returns Ethereum. One name, multichain rails.
+5. **The 5-faces beat.** Same resource subname resolves five different ways: pool address, multichain address, `funded-by`, `maintainer`, `contenthash`.
+6. **ENSIP-19 reverse on L2.** Seeded wallets show their `anna.vinohrady…` name natively on Basescan.
+7. **Federation discovery on the protocol root.** `text(hromada.eth, "cities")` makes the root itself an ENS-discoverable data structure.
+
+---
+
+## ENS standards in play
+
+| Standard | Where |
+|---|---|
+| ENSIP-10 wildcard (`IExtendedResolver`) | `HromadaResolver.sol` |
+| EIP-3668 CCIP-Read | Resolver + Next.js gateway at `/api/ccip/[sender]/[callData]` |
+| ENSIP-9/11 multi-coin | Gateway returns Base Sepolia addr for coinType 2147568180 |
+| ENSIP-7 contenthash | Resource subname points at IPFS-pinned usage docs |
+| ENSIP-19 default reverse (L2) | Seed registers reverse names via `L2ReverseRegistrar` on Base Sepolia |
+| EIP-137 namehash | All text records keyed by canonical namehash (cross-language verified) |
+
+---
+
+## Architecture
+
+```
+┌─ Sepolia ──────────────────────┐    ┌─ Base Sepolia ─────────────────────┐
+│                                │    │                                    │
+│  HromadaResolver               │    │  HromadaRegistry                   │
+│  ├─ resolve() reverts with     │    │  ├─ neighborhoods, members,        │
+│  │  OffchainLookup             │◀───┤  │  resources, text records       │
+│  └─ resolveWithProof()         │CCIP│  └─ namehash-keyed                 │
+│      verifies EIP-191 sig      │ -R │                                    │
+│                                │ ead│  CommitmentPool                    │
+└────────────┬───────────────────┘    │  ├─ USDC threshold-commit          │
+             │                        │  ├─ 30/50/20 milestone split       │
+             │ OffchainLookup         │  ├─ M-of-N attestation             │
+             ▼                        │  └─ writes ENS records on funding  │
+        ┌──────────────────────────┐  │                                    │
+        │  Next.js gateway         │  │  MockUSDC (demo)                   │
+        │  /api/ccip/[s]/[d]       │──▶                                    │
+        │  ├─ decodes callData     │  └────────────────────────────────────┘
+        │  ├─ queries Base Sepolia │
+        │  ├─ signs (EIP-191)      │
+        │  └─ 60s in-memory cache  │
+        └──────────────────────────┘
+```
+
+State machine (CommitmentPool):
+
+```
+None → Active → Executing → Completed
+              ↘ Expired
+              ↘ Disputed
+```
+
+- **Active**: members commit USDC; auto-refund if deadline passes without threshold.
+- **Executing** (threshold met): resource subname auto-created; milestone 0 released.
+- **Completed** (warranty elapsed after attestation threshold): all milestones released.
+
+---
+
+## Demo state (post-seed)
+
+After running `Seed.s.sol` against Base Sepolia, the live demo shows:
+
+- `hromada.eth` → `text("cities") = "prague"` (federation discovery)
+- `vinohrady.prague.hromada.eth` — (example) Prague neighborhood with 15 members
+- 15 member subnames (`anna…ondra`) with **ENSIP-19 reverse names** registered on Base Sepolia (Basescan shows `anna.vinohrady…` instead of `0x…`)
+- `proposal-cargo-bikes.vinohrady.prague.hromada.eth` — proposal funded ($8,400 from 14 members), executor = `karel`
+- `cargo-bikes.vinohrady.prague.hromada.eth` — auto-created resource with all 5 records populated:
+  - `addr(node)` → pool
+  - `addr(node, 2147568180)` → same, ENSIP-11
+  - `text("funded-by")` → `proposal-cargo-bikes`
+  - `text("maintainer")` → `karel.vinohrady…` (frontend resolves to ENS)
+  - `text("attestations")` → 8 attesters (frontend resolves each)
+  - `contenthash(node)` → IPFS pin
+
+Pool state: milestone 0 (30%) and milestone 1 (50%) released to executor; milestone 2 (20%) claimable after warranty.
+
+---
 
 ## Quickstart
 
 ```bash
+git clone https://github.com/revmiller/hromada
+cd hromada
 yarn install
-yarn chain          # local Foundry node
-yarn deploy         # deploy contracts
-yarn start          # dev server
+
+# Local dev (Foundry anvil)
+yarn chain          # in one terminal
+yarn deploy         # in another — deploys all contracts to localhost
+yarn start          # starts the Next.js frontend at :3000
 ```
 
-See `packages/foundry/` for contracts and `packages/nextjs/` for the app.
+For testnet:
 
-## Roadmap
+```bash
+# Base Sepolia: Registry + Pool + MockUSDC
+yarn deploy --network baseSepolia --keystore <your-keystore>
 
-- **v1** (this repo): Threshold-commit pools, auto-refund, milestone escrow with attestation, CCIP-Read across L1/L2, multi-coin resolution, contenthash for proposal docs
-- **v2**: EIP-5564 stealth addresses + gasless relayer for private contributions
-- **v3**: Mainnet deploy + first real Vinohrady neighborhood with live neighbors
-- **v4**: Federation across cities (Prague + Berlin + Lisbon), cross-neighborhood bulk-purchase discovery
+# Sepolia: Resolver
+yarn deploy --file DeployResolver.s.sol --network sepolia --keystore <your-keystore>
+
+# Demo seed (multi-key, populates Vinohrady through milestone 1)
+yarn deploy --file Seed.s.sol --network baseSepolia --keystore <your-keystore>
+```
+
+Required env (in `packages/foundry/.env`):
+
+| Var | Description |
+|---|---|
+| `PROTOCOL_ROOT` | ENS name you control (e.g. `hromada.eth`) |
+| `GATEWAY_URL` | `https://<your-vercel>/api/ccip/{sender}/{data}` |
+| `GATEWAY_SIGNER` | EOA address that signs gateway responses |
+| `ALCHEMY_API_KEY`, `ETHERSCAN_API_KEY` | RPC + verification |
+| `REGISTRY_ADDRESS`, `COMMITMENT_POOL_ADDRESS`, `MOCK_USDC_ADDRESS` | Set after Base Sepolia deploy |
+
+Required Vercel env for the gateway:
+
+| Var | Description |
+|---|---|
+| `GATEWAY_PRIVATE_KEY` | Private key matching `GATEWAY_SIGNER` |
+| `RESOLVER_ADDRESS` | Sepolia resolver address (in EIP-191 digest) |
+| `REGISTRY_ADDRESS` | Base Sepolia registry address |
+| `BASE_SEPOLIA_RPC_URL` | Optional — defaults to Alchemy |
+| `NEXT_PUBLIC_PROTOCOL_ROOT` | Same as foundry's `PROTOCOL_ROOT` |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY` | For frontend ENS resolution |
+
+---
+
+## Post-hackathon (potential) roadmap
+
+- **EIP-5564 stealth + gasless relayer** — privacy. Registry's open key-value text store reserves space for `text(node, "scheme:1.1")` per ENSIP-19; v2 wires the relayer.
+- **Smart-account onboarding** (Coinbase Smart Wallet, Privy) — gasless first commit; collapses approve+commit dance.
+- **Mainnet + Base mainnet deploy** with first real Vinohrady deployment.
+- **Dispute resolution** module replacing v1 stub (tbd)
+- **Federation across cities** (Prague + Berlin + Lisbon) via the `cities` text record on the protocol root. Cross-neighborhood bulk-purchase discovery.
+- **Pluggable verifiers** for join + fulfillment (e.g., gating by NFT, attestation contract).
+- **ERC-1155 commitment receipts** as composable proof-of-participation tokens.
+
+---
+
+## Tech stack
+
+- **Contracts**: Solidity (Foundry), OpenZeppelin, ens-contracts NameCoder
+- **Frontend**: Next.js, wagmi, viem, RainbowKit, Tailwind
+- **Gateway**: Next.js API route, EIP-191 signing, in-memory TTL cache
+- **Monorepo**: Scaffold-ETH 2 
+- **Deploy targets**: Base Sepolia (state) + Sepolia (resolver)
+
+---
+
+## License
+
+MIT
