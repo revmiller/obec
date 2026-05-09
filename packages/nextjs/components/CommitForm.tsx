@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { type Address, erc20Abi, maxUint256, parseUnits } from "viem";
 import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { MintTestUSDC } from "~~/components/MintTestUSDC";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const USDC_DECIMALS = 6;
@@ -79,7 +80,10 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
 
   return (
     <div className="bg-base-200 rounded-xl p-5 space-y-4">
-      <h3 className="font-semibold">Commit funds</h3>
+      <div className="flex items-baseline justify-between">
+        <h3 className="font-semibold">Commit funds</h3>
+        <MintTestUSDC />
+      </div>
 
       <label className="block">
         <span className="text-xs opacity-70">Amount (EUR ≈ USDC)</span>
