@@ -4,8 +4,9 @@ import { use } from "react";
 import Link from "next/link";
 import { formatUnits } from "viem";
 import { namehash } from "viem/ens";
+import { CommitForm } from "~~/components/CommitForm";
 import { ENSName } from "~~/components/ENSName";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 const USDC_DECIMALS = 6;
@@ -24,6 +25,8 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
     functionName: "getProposal",
     args: [proposalNode],
   });
+
+  const { data: pool } = useDeployedContractInfo({ contractName: "CommitmentPool" });
 
   const status = Number(pr?.status ?? 0);
   const exists = status !== 0;
@@ -101,6 +104,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
               <Milestone label="Post-warranty (20%)" released={pr?.milestoneReleased?.[2] ?? false} />
             </div>
           </section>
+
+          {pool?.address && status === 1 /* Active */ && (
+            <section className="mt-8">
+              <CommitForm proposalNode={proposalNode} poolAddress={pool.address} />
+            </section>
+          )}
         </>
       )}
     </div>
