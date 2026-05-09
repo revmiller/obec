@@ -13,13 +13,13 @@ export function JoinNeighborhoodButton({ neighborhoodId }: { neighborhoodId: `0x
   const [label, setLabel] = useState("");
 
   const { data: existingNode } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });
 
   const { writeContractAsync, isPending } = useScaffoldWriteContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
   });
 
   if (!address) {

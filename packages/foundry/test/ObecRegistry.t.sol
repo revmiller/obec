@@ -4,12 +4,12 @@ pragma solidity ^0.8.19;
 import { Test } from "forge-std/Test.sol";
 import { NameCoder } from "@ensdomains/ens-contracts/utils/NameCoder.sol";
 
-import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
+import { ObecRegistry } from "../contracts/ObecRegistry.sol";
 
-contract HromadaRegistryTest is Test {
-    HromadaRegistry registry;
+contract ObecRegistryTest is Test {
+    ObecRegistry registry;
 
-    bytes32 constant ROOT = keccak256("hromada.eth-test-root");
+    bytes32 constant ROOT = keccak256("obec.eth-test-root");
 
     address admin   = makeAddr("admin");
     address anna    = makeAddr("anna");
@@ -19,7 +19,7 @@ contract HromadaRegistryTest is Test {
 
     function setUp() public {
         vm.prank(admin);
-        registry = new HromadaRegistry(ROOT);
+        registry = new ObecRegistry(ROOT);
 
         vm.prank(admin);
         registry.setCommitmentPool(pool);
@@ -28,16 +28,16 @@ contract HromadaRegistryTest is Test {
     // -------- setCommitmentPool --------
 
     function test_setCommitmentPool_onlyOwnerOnce() public {
-        HromadaRegistry r = new HromadaRegistry(ROOT);
+        ObecRegistry r = new ObecRegistry(ROOT);
 
         vm.prank(eve);
-        vm.expectRevert(HromadaRegistry.NotOwner.selector);
+        vm.expectRevert(ObecRegistry.NotOwner.selector);
         r.setCommitmentPool(pool);
 
         r.setCommitmentPool(pool);
         assertEq(r.commitmentPool(), pool);
 
-        vm.expectRevert(HromadaRegistry.PoolAlreadySet.selector);
+        vm.expectRevert(ObecRegistry.PoolAlreadySet.selector);
         r.setCommitmentPool(address(0xdead));
     }
 
@@ -64,7 +64,7 @@ contract HromadaRegistryTest is Test {
         vm.prank(admin);
         registry.createNeighborhood("prague", "vinohrady");
         vm.prank(admin);
-        vm.expectRevert(HromadaRegistry.AlreadyExists.selector);
+        vm.expectRevert(ObecRegistry.AlreadyExists.selector);
         registry.createNeighborhood("prague", "vinohrady");
     }
 
@@ -93,7 +93,7 @@ contract HromadaRegistryTest is Test {
     function test_joinNeighborhood_nonExistentReverts() public {
         bytes32 fake = keccak256("nope");
         vm.prank(anna);
-        vm.expectRevert(HromadaRegistry.NeighborhoodNotFound.selector);
+        vm.expectRevert(ObecRegistry.NeighborhoodNotFound.selector);
         registry.joinNeighborhood(fake, "anna");
     }
 
@@ -102,7 +102,7 @@ contract HromadaRegistryTest is Test {
         vm.prank(anna);
         registry.joinNeighborhood(id, "anna");
         vm.prank(anna);
-        vm.expectRevert(HromadaRegistry.AlreadyExists.selector);
+        vm.expectRevert(ObecRegistry.AlreadyExists.selector);
         registry.joinNeighborhood(id, "anna2");
     }
 
@@ -112,7 +112,7 @@ contract HromadaRegistryTest is Test {
         bytes32 id = _seedNeighborhood();
 
         vm.prank(eve);
-        vm.expectRevert(HromadaRegistry.NotPool.selector);
+        vm.expectRevert(ObecRegistry.NotPool.selector);
         registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         vm.prank(pool);
@@ -141,7 +141,7 @@ contract HromadaRegistryTest is Test {
     function test_setText_strangerReverts() public {
         (, bytes32 annaNode) = _seedNeighborhoodWithAnna();
         vm.prank(eve);
-        vm.expectRevert(HromadaRegistry.Unauthorized.selector);
+        vm.expectRevert(ObecRegistry.Unauthorized.selector);
         registry.setText(annaNode, "credential.electrician", "yes");
     }
 
@@ -167,7 +167,7 @@ contract HromadaRegistryTest is Test {
         assertEq(registry.getText(root, "cities"), "prague");
 
         vm.prank(eve);
-        vm.expectRevert(HromadaRegistry.Unauthorized.selector);
+        vm.expectRevert(ObecRegistry.Unauthorized.selector);
         registry.setText(root, "cities", "berlin");
     }
 
@@ -190,7 +190,7 @@ contract HromadaRegistryTest is Test {
         bytes32 resourceNode = registry.registerResource(id, "cargo-bikes", "mobility", pool);
 
         vm.prank(eve);
-        vm.expectRevert(HromadaRegistry.Unauthorized.selector);
+        vm.expectRevert(ObecRegistry.Unauthorized.selector);
         registry.setContenthash(resourceNode, hex"00");
     }
 

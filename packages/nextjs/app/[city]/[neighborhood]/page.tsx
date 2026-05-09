@@ -12,7 +12,7 @@ import { NeighborhoodDescription } from "~~/components/NeighborhoodDescription";
 import { ResourceRow } from "~~/components/ResourceRow";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 type Params = { city: string; neighborhood: string };
 
@@ -22,19 +22,19 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
   const neighborhoodId = namehash(fullName);
 
   const { data: hood } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "neighborhoods",
     args: [neighborhoodId],
   });
 
   const { data: memberNodes } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNeighborhoodMembers",
     args: [neighborhoodId],
   });
 
   const { data: resourceNodes } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNeighborhoodResources",
     args: [neighborhoodId],
   });

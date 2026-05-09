@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 type Props = {
   node: `0x${string}`;
@@ -14,7 +14,7 @@ type Props = {
 /// Renders a proposal-typed or resource-typed subname row. Proposal rows link to /p/[proposal].
 export function ResourceRow({ node, city, neighborhood }: Props) {
   const { data: resource } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "resources",
     args: [node],
   });

@@ -14,7 +14,7 @@ import { ResourceCard } from "~~/components/ResourceCard";
 import { ShareButton } from "~~/components/ShareButton";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const USDC_DECIMALS = 6;
 
 const STATUS_LABEL = ["None", "Active", "Executing", "Completed", "Expired", "Disputed"] as const;
@@ -33,7 +33,7 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
   });
 
   const { data: description } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getText",
     args: [proposalNode, "description"],
   });

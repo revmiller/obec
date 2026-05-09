@@ -2,17 +2,17 @@
 
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 export function MemberRow({ node }: { node: `0x${string}` }) {
   const { data: member } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "members",
     args: [node],
   });
 
   const { data: labels } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeLabels",
     args: [node],
   });

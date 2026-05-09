@@ -5,10 +5,10 @@ import { IExtendedResolver } from "@ensdomains/ens-contracts/resolvers/profiles/
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/// @title HromadaResolver
+/// @title ObecResolver
 /// @notice ENS wildcard + CCIP-Read resolver. Defers all queries to a signed gateway response.
 ///         Designed to be set as the resolver for ${PROTOCOL_ROOT} on Sepolia ENS.
-contract HromadaResolver is IExtendedResolver, ERC165 {
+contract ObecResolver is IExtendedResolver, ERC165 {
     error OffchainLookup(
         address sender,
         string[] urls,

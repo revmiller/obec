@@ -7,7 +7,7 @@ import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 const USDC_DECIMALS = 6;
@@ -41,7 +41,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const [resourceType, setResourceType] = useState("mobility");
 
   const { data: connectedNode } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });
@@ -51,7 +51,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
     contractName: "CommitmentPool",
   });
   const { writeContractAsync: setText } = useScaffoldWriteContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
   });
 
   if (!address || !isMember) return null;

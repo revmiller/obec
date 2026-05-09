@@ -3,7 +3,7 @@
 import { ENSName } from "~~/components/ENSName";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 type Props = {
   resourceNode: `0x${string}`;
@@ -14,31 +14,31 @@ type Props = {
 /// credential store, and discovery endpoint.
 export function ResourceCard({ resourceNode }: Props) {
   const { data: resource } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "resources",
     args: [resourceNode],
   });
 
   const { data: labels } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeLabels",
     args: [resourceNode],
   });
 
   const { data: fundedBy } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getText",
     args: [resourceNode, "funded-by"],
   });
 
   const { data: maintainerText } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getText",
     args: [resourceNode, "maintainer"],
   });
 
   const { data: contenthash } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getContenthash",
     args: [resourceNode],
   });

@@ -9,7 +9,7 @@ import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 export function CreateNeighborhoodButton({ city, neighborhood }: { city: string; neighborhood: string }) {
   const { address } = useAccount();
   const { writeContractAsync, isPending } = useScaffoldWriteContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
   });
 
   if (!address) {

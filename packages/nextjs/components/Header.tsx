@@ -9,7 +9,7 @@ import { ConnectedAs } from "~~/components/ConnectedAs";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 type HeaderMenuLink = {
   label: string;
@@ -85,7 +85,7 @@ export const Header = () => {
         </details>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Hromada</span>
+            <span className="font-bold leading-tight">Obec</span>
             <span className="text-xs font-mono opacity-70">{PROTOCOL_ROOT}</span>
           </div>
         </Link>

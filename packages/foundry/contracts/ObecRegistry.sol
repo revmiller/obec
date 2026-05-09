@@ -3,11 +3,11 @@ pragma solidity ^0.8.19;
 
 import { NameCoder } from "@ensdomains/ens-contracts/utils/NameCoder.sol";
 
-/// @title HromadaRegistry
+/// @title ObecRegistry
 /// @notice Stores neighborhoods, members, resources, and ENS-style text/contenthash records
-///         keyed by ENS namehash. Used by HromadaResolver (via CCIP-Read gateway) to resolve
+///         keyed by ENS namehash. Used by ObecResolver (via CCIP-Read gateway) to resolve
 ///         subnames under ${PROTOCOL_ROOT}.
-contract HromadaRegistry {
+contract ObecRegistry {
     bytes32 public immutable PROTOCOL_ROOT_NAMEHASH;
     address public owner;
     address public commitmentPool;
@@ -180,7 +180,7 @@ contract HromadaRegistry {
 
     function _canModify(bytes32 node, address caller) internal view returns (bool) {
         if (caller == commitmentPool) return true;
-        // Registry owner can write on the protocol root itself (e.g. text(hromada.eth, "cities")
+        // Registry owner can write on the protocol root itself (e.g. text(obec.eth, "cities")
         // for federation discovery — frames the root as an ENS-native data structure).
         if (node == PROTOCOL_ROOT_NAMEHASH && caller == owner) return true;
         Member memory m = members[node];

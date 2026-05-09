@@ -5,7 +5,7 @@ import { type Address, createPublicClient, http } from "viem";
 import { sepolia } from "viem/chains";
 import { COIN_TYPE_BASE_SEPOLIA } from "~~/lib/coin-types";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const ALCHEMY_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "";
 
 const sepoliaClient = createPublicClient({
@@ -29,7 +29,7 @@ type Result = {
 };
 
 /// Resolves an ENS name through the actual ENS+CCIP-Read flow, NOT through our registry directly.
-/// Demonstrates that any wallet/explorer/dApp can read Hromada records via standard ENS infra.
+/// Demonstrates that any wallet/explorer/dApp can read Obec records via standard ENS infra.
 ///   viem → resolver on Sepolia → OffchainLookup → our gateway → Base Sepolia state → signed → verified
 export function ResolvedViaENS({ name }: { name: string }) {
   const [r, setR] = useState<Result>({ loading: true });

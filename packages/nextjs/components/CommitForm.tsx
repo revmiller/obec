@@ -39,7 +39,7 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
   })();
 
   const { data: connectedNode } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });

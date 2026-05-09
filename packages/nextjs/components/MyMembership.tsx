@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 
 /// When the connected wallet has a member subname, surface a deep-link to their neighborhood.
@@ -12,7 +12,7 @@ export function MyMembership() {
   const { address } = useAccount();
 
   const { data: node } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });
@@ -20,19 +20,19 @@ export function MyMembership() {
   const hasMembership = node && node !== ZERO_NODE;
 
   const { data: member } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "members",
     args: hasMembership ? [node] : [undefined],
   });
 
   const { data: neighborhood } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "neighborhoods",
     args: member?.[1] ? [member[1]] : [undefined],
   });
 
   const { data: labels } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeLabels",
     args: hasMembership ? [node] : [undefined],
   });

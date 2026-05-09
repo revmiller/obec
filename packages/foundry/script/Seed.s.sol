@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import { Script, console } from "forge-std/Script.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
+import { ObecRegistry } from "../contracts/ObecRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
 import { MockUSDC } from "../contracts/MockUSDC.sol";
 
@@ -14,7 +14,7 @@ interface IL2ReverseRegistrar {
 
 /// @notice Demo seed for Vinohrady. Reads contract addresses from env (set after Deploy.s.sol).
 ///         Funds 15 ephemeral keys derived from DEMO_MNEMONIC, has them join + commit + attest,
-///         and registers ENSIP-19 reverse names so Basescan shows e.g. anna.vinohrady.prague.hromada.eth.
+///         and registers ENSIP-19 reverse names so Basescan shows e.g. anna.vinohrady.prague.obec.eth.
 
 contract Seed is Script {
     string constant CITY = "prague";
@@ -37,7 +37,7 @@ contract Seed is Script {
         address registryAddr = vm.envAddress("REGISTRY_ADDRESS");
         address poolAddr     = vm.envAddress("COMMITMENT_POOL_ADDRESS");
         address usdcAddr     = vm.envAddress("MOCK_USDC_ADDRESS");
-        string memory protocolRoot = vm.envOr("PROTOCOL_ROOT", string("hromada.eth"));
+        string memory protocolRoot = vm.envOr("PROTOCOL_ROOT", string("obec.eth"));
 
         // Deterministic ephemeral keys so the same wallets show up across reseeds.
         string memory mnemonic = vm.envOr(
@@ -45,7 +45,7 @@ contract Seed is Script {
             string("test test test test test test test test test test test junk")
         );
 
-        HromadaRegistry registry = HromadaRegistry(registryAddr);
+        ObecRegistry registry = ObecRegistry(registryAddr);
         CommitmentPool  pool     = CommitmentPool(poolAddr);
         MockUSDC        usdc     = MockUSDC(usdcAddr);
 
@@ -54,7 +54,7 @@ contract Seed is Script {
         // -------- Phase 1: deployer creates the neighborhood + seeds federation cities --------
         vm.startBroadcast();
         // Federation discovery: register the city list on the protocol root itself so external
-        // indexers can crawl the namespace via a single getText call on hromada.eth.
+        // indexers can crawl the namespace via a single getText call on obec.eth.
         registry.setText(registry.PROTOCOL_ROOT_NAMEHASH(), "cities", CITY);
         bytes32 nbId = registry.createNeighborhood(CITY, NEIGHBORHOOD);
         registry.setText(
@@ -82,7 +82,7 @@ contract Seed is Script {
             vm.startBroadcast(pk);
             registry.joinNeighborhood(nbId, labels[i]);
             // ENSIP-19 reverse: set the wallet's primary name so Basescan/explorers
-            // display "anna.vinohrady.prague.hromada.eth" instead of 0x...
+            // display "anna.vinohrady.prague.obec.eth" instead of 0x...
             string memory fullName = string.concat(
                 labels[i], ".", NEIGHBORHOOD, ".", CITY, ".", protocolRoot
             );

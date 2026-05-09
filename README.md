@@ -1,11 +1,11 @@
-# Hromada
+# Obec
 
 **ENS-native protocol for neighborhood commons.** Neighbors pool USDC for shared physical resources via threshold-commit smart contracts. **Auto-refund if the fundraise falls short**; milestone-released escrow if it succeeds, with attestation-gated payouts. ENS subnames serve as identity, credentials, resource registry, and multichain payment rails.
 
 The naming hierarchy mirrors real-world geography:
 
 ```
-anna . vinohrady . prague . hromada.eth
+anna . vinohrady . prague . obec.eth
   │         │          │         │
   │         │          │         └─ protocol root
   │         │          └─ city
@@ -24,12 +24,12 @@ We treat ENS as a programmable, cross-chain registry that a state machine on L2 
 Concrete instances of *ENS doing real work, not display*:
 
 1. **The state machine writes ENS as it executes.** When a proposal hits its threshold, the pool atomically (a) creates a new ENS subname for the resource, (b) writes `funded-by` / `status` / `maintainer` text records, and (c) releases milestone 0. ENS is *part* of the state machine, not metadata about it.
-2. **Subnames are functional addresses.** `addr(resourceNode)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.hromada.eth` lands funds in the right escrow on the right chain. The name *is* the route.
+2. **Subnames are functional addresses.** `addr(resourceNode)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.obec.eth` lands funds in the right escrow on the right chain. The name *is* the route.
 3. **Subnames as ACL.** Membership in the namespace = permission to modify it. `_canModify` checks ENS-derived membership.
 4. **Multi-coin per subname.** `addr(node, 2147568180)` returns the Base Sepolia address; `addr(node, 60)` returns Ethereum. One name, multichain rails.
 5. **The 5-faces beat.** Same resource subname resolves five different ways: pool address, multichain address, `funded-by`, `maintainer`, `contenthash`.
 6. **ENSIP-19 reverse on L2.** Seeded wallets show their `anna.vinohrady…` name natively on Basescan.
-7. **Federation discovery on the protocol root.** `text(hromada.eth, "cities")` makes the root itself an ENS-discoverable data structure.
+7. **Federation discovery on the protocol root.** `text(obec.eth, "cities")` makes the root itself an ENS-discoverable data structure.
 
 ---
 
@@ -37,7 +37,7 @@ Concrete instances of *ENS doing real work, not display*:
 
 | Standard | Where |
 |---|---|
-| ENSIP-10 wildcard (`IExtendedResolver`) | `HromadaResolver.sol` |
+| ENSIP-10 wildcard (`IExtendedResolver`) | `ObecResolver.sol` |
 | EIP-3668 CCIP-Read | Resolver + Next.js gateway at `/api/ccip/[sender]/[callData]` |
 | ENSIP-9/11 multi-coin | Gateway returns Base Sepolia addr for coinType 2147568180 |
 | ENSIP-7 contenthash | Resource subnames expose a contenthash slot (v1 demo seeds a placeholder; v2 pins real docs) |
@@ -51,7 +51,7 @@ Concrete instances of *ENS doing real work, not display*:
 ```
 ┌─ Sepolia ──────────────────────┐    ┌─ Base Sepolia ─────────────────────┐
 │                                │    │                                    │
-│  HromadaResolver               │    │  HromadaRegistry                   │
+│  ObecResolver               │    │  ObecRegistry                   │
 │  ├─ resolve() reverts with     │    │  ├─ neighborhoods, members,        │
 │  │  OffchainLookup             │◀───┤  │  resources, text records       │
 │  └─ resolveWithProof()         │CCIP│  └─ namehash-keyed                 │
@@ -89,11 +89,11 @@ None → Active → Executing → Completed
 
 After running `Seed.s.sol` against Base Sepolia, the live demo shows:
 
-- `hromada.eth` → `text("cities") = "prague"` (federation discovery)
-- `vinohrady.prague.hromada.eth` — (example) Prague neighborhood with 15 members
+- `obec.eth` → `text("cities") = "prague"` (federation discovery)
+- `vinohrady.prague.obec.eth` — (example) Prague neighborhood with 15 members
 - 15 member subnames (`anna…ondra`) with **ENSIP-19 reverse names** registered on Base Sepolia (Basescan shows `anna.vinohrady…` instead of `0x…`)
-- `proposal-cargo-bikes.vinohrady.prague.hromada.eth` — proposal funded ($8,400 from 14 members), executor = `karel`
-- `cargo-bikes.vinohrady.prague.hromada.eth` — auto-created resource with all 5 records populated:
+- `proposal-cargo-bikes.vinohrady.prague.obec.eth` — proposal funded ($8,400 from 14 members), executor = `karel`
+- `cargo-bikes.vinohrady.prague.obec.eth` — auto-created resource with all 5 records populated:
   - `addr(node)` → pool
   - `addr(node, 2147568180)` → same, ENSIP-11
   - `text("funded-by")` → `proposal-cargo-bikes`
@@ -108,8 +108,8 @@ Pool state: milestone 0 (30%) and milestone 1 (50%) released to executor; milest
 ## Quickstart
 
 ```bash
-git clone https://github.com/revmiller/hromada
-cd hromada
+git clone https://github.com/revmiller/obec
+cd obec
 yarn install
 
 # Local dev (Foundry anvil)
@@ -135,7 +135,7 @@ Required env (in `packages/foundry/.env`):
 
 | Var | Description |
 |---|---|
-| `PROTOCOL_ROOT` | ENS name you control (e.g. `hromada.eth`) |
+| `PROTOCOL_ROOT` | ENS name you control (e.g. `obec.eth`) |
 | `GATEWAY_URL` | `https://<your-vercel>/api/ccip/{sender}/{data}` |
 | `GATEWAY_SIGNER` | EOA address that signs gateway responses |
 | `ALCHEMY_API_KEY`, `ETHERSCAN_API_KEY` | RPC + verification |

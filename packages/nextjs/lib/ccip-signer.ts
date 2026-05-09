@@ -1,7 +1,7 @@
 import { type Hex, encodePacked, keccak256 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-/// Signs the CCIP-Read response per the HromadaResolver verification scheme:
+/// Signs the CCIP-Read response per the ObecResolver verification scheme:
 ///   sigHash = keccak256(0x1900 || resolverAddress || expiry || keccak256(extraData) || keccak256(result))
 export async function signGatewayResponse(args: {
   privateKey: Hex;

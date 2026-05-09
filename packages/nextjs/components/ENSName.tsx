@@ -3,14 +3,14 @@
 import { type Address as AddressType } from "viem";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 /// Render any address as its full ENS subname using the Registry's reverse helpers.
 /// Falls back to a truncated 0x… form when the address has no member subname.
 export function ENSName({ address }: { address: AddressType | undefined }) {
   const { data: node } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });
@@ -18,7 +18,7 @@ export function ENSName({ address }: { address: AddressType | undefined }) {
   const hasMembership = node && node !== `0x${"0".repeat(64)}`;
 
   const { data: labels } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeLabels",
     args: hasMembership ? [node] : [undefined],
   });

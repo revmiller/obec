@@ -2,10 +2,10 @@
 pragma solidity ^0.8.19;
 
 import { Test } from "forge-std/Test.sol";
-import { HromadaResolver } from "../contracts/HromadaResolver.sol";
+import { ObecResolver } from "../contracts/ObecResolver.sol";
 
-contract HromadaResolverTest is Test {
-    HromadaResolver resolver;
+contract ObecResolverTest is Test {
+    ObecResolver resolver;
 
     uint256 signerKey = 0xA11CE;
     address signer    = vm.addr(signerKey);
@@ -13,8 +13,8 @@ contract HromadaResolverTest is Test {
 
     function setUp() public {
         string[] memory urls = new string[](1);
-        urls[0] = "https://hromada.vercel.app/api/ccip/{sender}/{data}";
-        resolver = new HromadaResolver(urls, signer);
+        urls[0] = "https://obec.vercel.app/api/ccip/{sender}/{data}";
+        resolver = new ObecResolver(urls, signer);
     }
 
     function test_supportsInterface_extendedResolver() public view {
@@ -24,7 +24,7 @@ contract HromadaResolverTest is Test {
     }
 
     function test_resolve_revertsWithOffchainLookup() public {
-        bytes memory name = bytes("anna.vinohrady.prague.hromada.eth");
+        bytes memory name = bytes("anna.vinohrady.prague.obec.eth");
         bytes memory data = abi.encodeWithSignature("addr(bytes32)", bytes32(uint256(0x1234)));
 
         // Expect OffchainLookup revert; selector is keccak256("OffchainLookup(address,string[],bytes,bytes4,bytes)")
@@ -51,7 +51,7 @@ contract HromadaResolverTest is Test {
         bytes memory sig = _sign(result, expiry, extraData);
         bytes memory response = abi.encode(result, expiry, sig);
 
-        vm.expectRevert(HromadaResolver.SignatureExpired.selector);
+        vm.expectRevert(ObecResolver.SignatureExpired.selector);
         resolver.resolveWithProof(response, extraData);
     }
 
@@ -67,13 +67,13 @@ contract HromadaResolverTest is Test {
         bytes memory sig = abi.encodePacked(r, s, v);
         bytes memory response = abi.encode(result, expiry, sig);
 
-        vm.expectRevert(HromadaResolver.UnauthorizedSigner.selector);
+        vm.expectRevert(ObecResolver.UnauthorizedSigner.selector);
         resolver.resolveWithProof(response, extraData);
     }
 
     function test_setSigner_onlyOwner() public {
         vm.prank(eve);
-        vm.expectRevert(HromadaResolver.NotOwner.selector);
+        vm.expectRevert(ObecResolver.NotOwner.selector);
         resolver.setSigner(eve, true);
 
         resolver.setSigner(eve, true);
@@ -85,7 +85,7 @@ contract HromadaResolverTest is Test {
         urls[0] = "https://different.example/{sender}/{data}";
 
         vm.prank(eve);
-        vm.expectRevert(HromadaResolver.NotOwner.selector);
+        vm.expectRevert(ObecResolver.NotOwner.selector);
         resolver.setGatewayUrls(urls);
 
         resolver.setGatewayUrls(urls);

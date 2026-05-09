@@ -3,7 +3,7 @@
 import { useAccount } from "wagmi";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 
 /// Compact pill showing the connected wallet's full ENS subname when it's a member,
@@ -12,7 +12,7 @@ export function ConnectedAs() {
   const { address } = useAccount();
 
   const { data: node } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeByAddress",
     args: [address],
   });
@@ -20,7 +20,7 @@ export function ConnectedAs() {
   const hasMembership = node && node !== ZERO_NODE;
 
   const { data: labels } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getNodeLabels",
     args: hasMembership ? [node] : [undefined],
   });

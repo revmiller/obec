@@ -7,7 +7,7 @@ import type { NextPage } from "next";
 import { MyMembership } from "~~/components/MyMembership";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
+const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 // For v1, the home page is a directory of known neighborhoods. As the protocol
 // scales, this would index from events / The Graph. For the demo it's hardcoded.
@@ -18,13 +18,13 @@ const Home: NextPage = () => {
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
 
-  // Federation discovery — text(hromada.eth, "cities") tells external indexers which cities exist.
+  // Federation discovery — text(obec.eth, "cities") tells external indexers which cities exist.
   const { data: rootNamehash } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "PROTOCOL_ROOT_NAMEHASH",
   });
   const { data: federatedCities } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getText",
     args: rootNamehash ? [rootNamehash, "cities"] : [undefined, undefined],
   });
@@ -37,7 +37,7 @@ const Home: NextPage = () => {
   return (
     <div className="flex flex-col grow">
       <section className="px-6 py-16 max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold tracking-tight">Hromada.</h1>
+        <h1 className="text-5xl font-bold tracking-tight">Obec.</h1>
         <p className="mt-4 text-xl opacity-80 max-w-2xl">
           Neighbors pool funds for shared resources — cargo bikes, retrofits, tools — with auto-refund if not enough
           commit. Identity, credentials, and resource registry all live in ENS subnames.

@@ -20,7 +20,7 @@ const RESOLVER_FUNCTIONS = parseAbi([
   "function contenthash(bytes32 node) view returns (bytes)",
 ]);
 
-/// HromadaRegistry surface used by the gateway.
+/// ObecRegistry surface used by the gateway.
 const REGISTRY_ABI = parseAbi([
   "function members(bytes32 node) view returns (address wallet, bytes32 neighborhoodId, string label, uint64 joinedAt, bool active)",
   "function resources(bytes32 node) view returns (bytes32 neighborhoodId, string label, string resourceType, address fundedBy, bool active)",

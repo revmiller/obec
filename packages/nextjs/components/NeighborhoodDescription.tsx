@@ -17,13 +17,13 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
   const [draft, setDraft] = useState("");
 
   const { data: description } = useScaffoldReadContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
     functionName: "getText",
     args: [neighborhoodId, "description"],
   });
 
   const { writeContractAsync, isPending } = useScaffoldWriteContract({
-    contractName: "HromadaRegistry",
+    contractName: "ObecRegistry",
   });
 
   useEffect(() => {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
 
-import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
+import { ObecRegistry } from "../contracts/ObecRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
 
 /// @notice Deploys CommitmentPool, wires Registry → Pool.
@@ -17,7 +17,7 @@ contract DeployPool is ScaffoldETHDeploy {
         deployments.push(Deployment({ name: "CommitmentPool", addr: address(pool) }));
 
         // Owner of registry must be the deployer; set the pool address.
-        HromadaRegistry(registryAddr).setCommitmentPool(address(pool));
+        ObecRegistry(registryAddr).setCommitmentPool(address(pool));
 
         console.log("CommitmentPool deployed:", address(pool));
         console.log("Wired to Registry:", registryAddr);

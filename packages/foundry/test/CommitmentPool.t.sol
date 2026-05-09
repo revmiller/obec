@@ -5,7 +5,7 @@ import { Test } from "forge-std/Test.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
-import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
+import { ObecRegistry } from "../contracts/ObecRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
 
 contract MockUSDC is ERC20 {
@@ -15,11 +15,11 @@ contract MockUSDC is ERC20 {
 }
 
 contract CommitmentPoolTest is Test {
-    HromadaRegistry registry;
+    ObecRegistry registry;
     CommitmentPool pool;
     MockUSDC usdc;
 
-    bytes32 constant ROOT = keccak256("hromada.eth-test-root");
+    bytes32 constant ROOT = keccak256("obec.eth-test-root");
 
     address admin    = makeAddr("admin");
     address jan      = makeAddr("jan-executor");
@@ -36,7 +36,7 @@ contract CommitmentPoolTest is Test {
         usdc = new MockUSDC();
 
         vm.prank(admin);
-        registry = new HromadaRegistry(ROOT);
+        registry = new ObecRegistry(ROOT);
 
         pool = new CommitmentPool(address(registry), address(usdc));
         vm.prank(admin);
