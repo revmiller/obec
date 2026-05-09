@@ -5,6 +5,7 @@ import { type Address, namehash, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 
@@ -32,7 +33,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   useEffect(() => {
     if (address && !executor) setExecutor(address);
   }, [address, executor]);
-  const [targetEur, setTargetEur] = useState("8000");
+  const [targetUsd, setTargetUsd] = useState("8000");
   const [minMembers, setMinMembers] = useState("14");
   const [attestationThreshold, setAttestationThreshold] = useState("8");
   const [deadlineDays, setDeadlineDays] = useState("30");
@@ -64,7 +65,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           neighborhoodId,
           label,
           executor: executor as Address,
-          targetAmount: parseUnits(targetEur, USDC_DECIMALS),
+          targetAmount: parseUnits(targetUsd, USDC_DECIMALS),
           minMembers: BigInt(minMembers),
           deadline,
           warrantyDuration: DEFAULT_WARRANTY_SECONDS,
@@ -93,7 +94,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   }
 
   return (
-    <NetworkGuard targetChainId={84532}>
+    <NetworkGuard targetChainId={STATE_CHAIN_ID}>
       <div className="mt-4 p-5 bg-base-200 rounded-xl space-y-3">
         <h3 className="font-semibold">New proposal</h3>
         <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
@@ -108,7 +109,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           />
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Target (USD ≈ USDC)" value={targetEur} onChange={setTargetEur} />
+          <Field label="Target (USD ≈ USDC)" value={targetUsd} onChange={setTargetUsd} />
           <Field label="Min members" value={minMembers} onChange={setMinMembers} />
           <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
           <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />

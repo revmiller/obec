@@ -7,6 +7,7 @@ import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { MintTestUSDC } from "~~/components/MintTestUSDC";
 import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 const USDC_DECIMALS = 6;
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
@@ -76,7 +77,7 @@ export function CommitForm({ proposalNode, poolAddress, enabled = true }: Props)
   };
 
   return (
-    <NetworkGuard targetChainId={84532}>
+    <NetworkGuard targetChainId={STATE_CHAIN_ID}>
       <div className="bg-base-200 rounded-xl p-5 space-y-4">
         <div className="flex items-baseline justify-between">
           <h3 className="font-semibold">Commit funds</h3>

@@ -4,6 +4,7 @@ import { useAccount } from "wagmi";
 import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 export function CreateNeighborhoodButton({ city, neighborhood }: { city: string; neighborhood: string }) {
   const { address } = useAccount();
@@ -21,7 +22,7 @@ export function CreateNeighborhoodButton({ city, neighborhood }: { city: string;
 
   return (
     <div className="mt-4">
-      <NetworkGuard targetChainId={84532}>
+      <NetworkGuard targetChainId={STATE_CHAIN_ID}>
         <button
           className="btn btn-primary"
           disabled={isPending}

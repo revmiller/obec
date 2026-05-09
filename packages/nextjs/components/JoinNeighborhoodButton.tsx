@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 
@@ -29,7 +30,7 @@ export function JoinNeighborhoodButton({ neighborhoodId }: { neighborhoodId: `0x
   }
 
   return (
-    <NetworkGuard targetChainId={84532}>
+    <NetworkGuard targetChainId={STATE_CHAIN_ID}>
       <div className="mt-4 flex items-center gap-2">
         <input
           type="text"

@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import { type Address, createPublicClient, http } from "viem";
 import { sepolia } from "viem/chains";
+import { COIN_TYPE_BASE_SEPOLIA } from "~~/lib/coin-types";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "hromada.eth";
 const ALCHEMY_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "";
-
-// ENSIP-11: 0x80000000 | chainId. Base Sepolia chainId = 84532 = 0x14a34.
-const COIN_TYPE_BASE_SEPOLIA = 2147568180n;
 
 const sepoliaClient = createPublicClient({
   chain: sepolia,
