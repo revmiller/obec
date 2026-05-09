@@ -1,17 +1,15 @@
 "use client";
 
 import { erc20Abi, parseUnits } from "viem";
-import { useAccount, useChainId, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 
 const USDC_DECIMALS = 6;
 const MINT_AMOUNT = parseUnits("10000", USDC_DECIMALS); // €10k worth
 
-/// Local-dev affordance: mints MockUSDC to the connected wallet on chain 31337.
-/// Renders nothing on real testnets / mainnet.
+/// Mints MockUSDC to the connected wallet. Available on any chain where MockUSDC is deployed.
 export function MintTestUSDC() {
   const { address } = useAccount();
-  const chainId = useChainId();
   const { data: mockUsdc } = useDeployedContractInfo({ contractName: "MockUSDC" });
 
   const { data: balance, refetch } = useReadContract({
@@ -24,7 +22,6 @@ export function MintTestUSDC() {
 
   const { writeContractAsync, isPending } = useWriteContract();
 
-  if (chainId !== 31337) return null;
   if (!address || !mockUsdc?.address) return null;
   if (balance && balance > 0n) return null; // user already has some
 

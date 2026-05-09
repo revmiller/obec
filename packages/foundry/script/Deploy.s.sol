@@ -8,33 +8,23 @@ import { HromadaRegistry } from "../contracts/HromadaRegistry.sol";
 import { CommitmentPool } from "../contracts/CommitmentPool.sol";
 import { MockUSDC } from "../contracts/MockUSDC.sol";
 
-/// @notice One-shot deploy: Registry + Pool wired. On localhost (anvil) deploys a MockUSDC;
-///         on testnets reads USDC_ADDRESS from env.
+/// @notice Deploys Registry + MockUSDC + Pool, wired together.
 contract DeployScript is ScaffoldETHDeploy {
     function run() external ScaffoldEthDeployerRunner {
-        // 1. Registry
+        // Registry
         string memory protocolRoot = vm.envOr("PROTOCOL_ROOT", string("hromada.eth"));
-        bytes memory dns = NameCoder.encode(protocolRoot);
-        bytes32 rootNamehash = NameCoder.namehash(dns, 0);
-
+        bytes32 rootNamehash = NameCoder.namehash(NameCoder.encode(protocolRoot), 0);
         HromadaRegistry registry = new HromadaRegistry(rootNamehash);
         deployments.push(Deployment({ name: "HromadaRegistry", addr: address(registry) }));
         console.log("HromadaRegistry:", address(registry));
 
-        // 2. USDC (mock on localhost, real on testnets)
-        address usdc;
-        if (block.chainid == 31337) {
-            MockUSDC mock = new MockUSDC();
-            usdc = address(mock);
-            deployments.push(Deployment({ name: "MockUSDC", addr: usdc }));
-            console.log("MockUSDC (anvil-only):", usdc);
-        } else {
-            usdc = vm.envAddress("USDC_ADDRESS");
-            console.log("USDC (testnet):", usdc);
-        }
+        // MockUSDC — same on every chain so demo wallets can mint freely.
+        MockUSDC usdc = new MockUSDC();
+        deployments.push(Deployment({ name: "MockUSDC", addr: address(usdc) }));
+        console.log("MockUSDC:", address(usdc));
 
-        // 3. Pool
-        CommitmentPool pool = new CommitmentPool(address(registry), usdc);
+        // Pool
+        CommitmentPool pool = new CommitmentPool(address(registry), address(usdc));
         deployments.push(Deployment({ name: "CommitmentPool", addr: address(pool) }));
         registry.setCommitmentPool(address(pool));
         console.log("CommitmentPool:", address(pool));
