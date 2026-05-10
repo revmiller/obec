@@ -52,10 +52,13 @@ export async function handleCcipRequest(config: HandlerConfig, callDataHex: Hex)
   }
 
   // Cache by resolverCall (function + args). Result is independent of dnsName/sender;
-  // signature is recomputed each request with a fresh expiry.
+  // signature is recomputed each request with a fresh expiry. Lifecycle keys flip during
+  // the proposal state machine (status / maintainer / attestations) so we skip the cache
+  // for those — otherwise the chain advances but the public ENS read lags by up to TTL.
+  const cacheable = !isVolatileCall(resolverCall);
   const cacheKey = resolverCall.toLowerCase();
   let resultBytes: Hex;
-  const cached = cacheGet(cacheKey);
+  const cached = cacheable ? cacheGet(cacheKey) : undefined;
   if (cached) {
     resultBytes = cached as Hex;
   } else {
@@ -64,7 +67,7 @@ export async function handleCcipRequest(config: HandlerConfig, callDataHex: Hex)
     } catch (e) {
       return { error: `resolve failed: ${(e as Error).message}`, status: 502 };
     }
-    cacheSet(cacheKey, resultBytes);
+    if (cacheable) cacheSet(cacheKey, resultBytes);
   }
 
   // Sign + encode response: (bytes result, uint64 expiry, bytes signature)
@@ -86,6 +89,20 @@ export async function handleCcipRequest(config: HandlerConfig, callDataHex: Hex)
   void dnsName;
 
   return { data: payload };
+}
+
+const VOLATILE_TEXT_KEYS = new Set(["status", "maintainer", "attestations"]);
+
+function isVolatileCall(resolverCall: Hex): boolean {
+  try {
+    const decoded = decodeFunctionData({ abi: RESOLVER_FUNCTIONS, data: resolverCall });
+    if (decoded.functionName === "text") {
+      return VOLATILE_TEXT_KEYS.has(decoded.args[1] as string);
+    }
+  } catch {
+    // Treat undecodable calls as cacheable; resolveOne will reject them.
+  }
+  return false;
 }
 
 async function resolveOne(config: HandlerConfig, resolverCall: Hex): Promise<Hex> {

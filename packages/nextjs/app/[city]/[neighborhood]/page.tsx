@@ -182,7 +182,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
                 ))
               )}
             </div>
-            <CreateProposalForm neighborhoodId={neighborhoodId} city={city} neighborhood={neighborhood} />
+            <CreateProposalForm neighborhoodId={neighborhoodId} />
           </section>
 
           {/* Members + Wire */}

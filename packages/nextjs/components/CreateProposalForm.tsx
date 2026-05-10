@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type Address, namehash, parseUnits } from "viem";
+import { type Address, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { STATE_CHAIN_ID } from "~~/lib/coin-types";
-
-const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
 const ZERO_NODE = `0x${"0".repeat(64)}` as const;
 const USDC_DECIMALS = 6;
@@ -15,12 +13,10 @@ const DEFAULT_WARRANTY_SECONDS = 60n; // tight for demo; production default woul
 
 type Props = {
   neighborhoodId: `0x${string}`;
-  city: string;
-  neighborhood: string;
 };
 
 /// Member-only form to create a proposal. Shows a "create" affordance once the user has joined.
-export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props) {
+export function CreateProposalForm({ neighborhoodId }: Props) {
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
@@ -49,9 +45,6 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const { writeContractAsync: createProposal, isPending } = useScaffoldWriteContract({
     contractName: "CommitmentPool",
   });
-  const { writeContractAsync: setText } = useScaffoldWriteContract({
-    contractName: "ObecRegistry",
-  });
 
   if (!address || !isMember) return null;
 
@@ -70,16 +63,10 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           warrantyDuration: DEFAULT_WARRANTY_SECONDS,
           attestationThreshold: BigInt(attestationThreshold),
           resourceType,
+          description: description.trim(),
         },
       ],
     });
-    if (description.trim()) {
-      const proposalNode = namehash(`${label}.${neighborhood}.${city}.${PROTOCOL_ROOT}`);
-      await setText({
-        functionName: "setText",
-        args: [proposalNode, "description", description.trim()],
-      });
-    }
     setOpen(false);
   };
 

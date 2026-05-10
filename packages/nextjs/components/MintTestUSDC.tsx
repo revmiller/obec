@@ -2,7 +2,9 @@
 
 import { erc20Abi, parseUnits } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { NetworkGuard } from "~~/components/NetworkGuard";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 const USDC_DECIMALS = 6;
 const MINT_AMOUNT = parseUnits("10000", USDC_DECIMALS); // $10k worth
@@ -47,11 +49,13 @@ export function MintTestUSDC() {
   };
 
   return (
-    <div className="text-xs opacity-70">
-      No USDC?{" "}
-      <button onClick={onMint} disabled={isPending} className="underline hover:opacity-100">
-        {isPending ? "Minting…" : "Mint $10,000 test USDC"}
-      </button>
-    </div>
+    <NetworkGuard targetChainId={STATE_CHAIN_ID}>
+      <div className="text-xs opacity-70">
+        No USDC?{" "}
+        <button onClick={onMint} disabled={isPending} className="underline hover:opacity-100">
+          {isPending ? "Minting…" : "Mint $10,000 test USDC"}
+        </button>
+      </div>
+    </NetworkGuard>
   );
 }

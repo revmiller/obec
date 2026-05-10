@@ -24,7 +24,7 @@ We treat ENS as a programmable, cross-chain registry that a state machine on L2 
 Concrete instances of *ENS doing real work, not display*:
 
 1. **The state machine writes ENS as it executes.** A project gets a single ENS subname at proposal creation; the pool atomically writes `status` ("proposing" → "active" → "completed"/"expired"), `maintainer`, and `attestations` text records as the lifecycle progresses, and on expiry deactivates the registry row so the dead project drops out of the neighborhood listing. ENS is *part* of the state machine, not metadata about it.
-2. **Subnames are functional addresses.** `addr(node)` returns the funding pool — a stranger paying `cargo-bikes.vinohrady.prague.obec.eth` lands funds in the right escrow on the right chain. The name *is* the route.
+2. **Subnames are functional addresses.** `addr(node)` returns the funding pool — `cargo-bikes.vinohrady.prague.obec.eth` resolves to the escrow contract on the right chain so a wallet that knows the protocol can drive `CommitmentPool.commit(node, amount)` against it. The name *is* the route.
 3. **Subnames as ACL.** Membership in the namespace = permission to modify it. `_canModify` checks ENS-derived membership.
 4. **Multi-coin per subname.** `addr(node, 2147568180)` returns the Base Sepolia address; `addr(node, 60)` returns Ethereum. One name, multichain rails.
 5. **The 5-faces beat.** Same project subname resolves five different ways: pool address, multichain address, `status`, `maintainer`, `contenthash`.

@@ -66,6 +66,30 @@ contract CommitmentPoolTest is Test {
         pool.createProposal(_baseParams());
     }
 
+    function test_createProposal_zeroExecutorReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.executor = address(0);
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
+    function test_createProposal_zeroTargetReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.targetAmount = 0;
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
+    function test_createProposal_emptyLabelReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.label = "";
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
     function test_createProposal_pastDeadlineReverts() public {
         CommitmentPool.CreateParams memory p = _baseParams();
         p.deadline = uint64(block.timestamp); // not strictly future
@@ -323,6 +347,69 @@ contract CommitmentPoolTest is Test {
         pool.raiseDispute(pid);
     }
 
+    function test_resolveDispute_resumeByAdmin() public {
+        bytes32 pid = _propose();
+        _commitAll(pid);
+        vm.prank(members[0]);
+        pool.raiseDispute(pid);
+
+        vm.prank(admin);
+        pool.resolveDispute(pid, false);
+        assertEq(uint8(pool.status(pid)), uint8(CommitmentPool.Status.Executing));
+
+        // Attestations resume.
+        vm.prank(members[0]);
+        pool.attest(pid);
+    }
+
+    function test_resolveDispute_refundProRatesByMilestonesReleased() public {
+        bytes32 pid = _propose();
+        _commitAll(pid);
+
+        // Threshold-met released M0 (30%). M1 not yet attested.
+        CommitmentPool.Proposal memory pr = pool.getProposal(pid);
+        assertTrue(pr.milestoneReleased[0]);
+        assertFalse(pr.milestoneReleased[1]);
+        uint256 totalCommitted = pr.totalCommitted;
+
+        vm.prank(members[0]);
+        pool.raiseDispute(pid);
+
+        vm.prank(admin);
+        pool.resolveDispute(pid, true);
+        assertEq(uint8(pool.status(pid)), uint8(CommitmentPool.Status.Expired));
+
+        // Each committer should reclaim 70% of their commitment (M0 already paid out).
+        uint256 expected = (PER_MBR * 7_000) / 10_000;
+        uint256 before = usdc.balanceOf(members[0]);
+        vm.prank(members[0]);
+        pool.claimRefund(pid);
+        assertEq(usdc.balanceOf(members[0]) - before, expected);
+
+        // Pool's leftover USDC after one committer claims = totalCommitted * 70% - one expected.
+        uint256 poolBalance = usdc.balanceOf(address(pool));
+        assertEq(poolBalance, (totalCommitted * 7_000) / 10_000 - expected);
+    }
+
+    function test_resolveDispute_nonAdminReverts() public {
+        bytes32 pid = _propose();
+        _commitAll(pid);
+        vm.prank(members[0]);
+        pool.raiseDispute(pid);
+
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.NotAdmin.selector);
+        pool.resolveDispute(pid, false);
+    }
+
+    function test_resolveDispute_wrongStatusReverts() public {
+        bytes32 pid = _propose();
+        _commitAll(pid);
+        vm.prank(admin);
+        vm.expectRevert(CommitmentPool.WrongStatus.selector);
+        pool.resolveDispute(pid, false);
+    }
+
     // -------- helpers --------
 
     function _baseParams() internal view returns (CommitmentPool.CreateParams memory p) {
@@ -335,7 +422,8 @@ contract CommitmentPoolTest is Test {
             deadline: uint64(block.timestamp + 30 days),
             warrantyDuration: WARRANTY,
             attestationThreshold: 8,
-            resourceType: "mobility"
+            resourceType: "mobility",
+            description: ""
         });
     }
 
