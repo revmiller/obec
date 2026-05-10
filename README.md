@@ -126,9 +126,6 @@ yarn deploy --network baseSepolia --keystore <your-keystore>
 
 # Sepolia: Resolver
 yarn deploy --file DeployResolver.s.sol --network sepolia --keystore <your-keystore>
-
-# Demo seed (multi-key, populates Vinohrady through milestone 1)
-yarn deploy --file Seed.s.sol --network baseSepolia --keystore <your-keystore>
 ```
 
 Required env (in `packages/foundry/.env`):
