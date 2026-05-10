@@ -92,6 +92,11 @@ contract ObecResolverTest is Test {
         assertEq(resolver.gatewayUrls(0), urls[0]);
     }
 
+    function test_transferOwnership_rejectsZeroAddress() public {
+        vm.expectRevert(ObecResolver.NotOwner.selector);
+        resolver.transferOwnership(address(0));
+    }
+
     // -------- helpers --------
 
     function _digest(bytes memory result, uint64 expiry, bytes memory extraData) internal view returns (bytes32) {

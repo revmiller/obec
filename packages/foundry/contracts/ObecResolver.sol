@@ -55,6 +55,7 @@ contract ObecResolver is IExtendedResolver, ERC165 {
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert NotOwner();
         emit OwnerTransferred(owner, newOwner);
         owner = newOwner;
     }
