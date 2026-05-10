@@ -70,7 +70,10 @@ export function useNeighborhoodAggregates(neighborhoodId: `0x${string}` | undefi
       const tuple = res.result as readonly unknown[] | undefined;
       if (!tuple) return;
       const active = tuple[4] as boolean;
-      if (active) out.push(nodes[i]);
+      const label = tuple[1] as string;
+      // Skip stranded entries whose label can't round-trip through the URL.
+      const isUrlSafe = !!label && /^[a-z0-9-]+$/.test(label);
+      if (active && isUrlSafe) out.push(nodes[i]);
     });
     return out;
   }, [resourceTuples, nodes]);

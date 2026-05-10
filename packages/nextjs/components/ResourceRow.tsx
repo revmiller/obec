@@ -33,7 +33,12 @@ export function ResourceRow({ node, city, neighborhood, index }: Props) {
   });
 
   const isActive = resource && Array.isArray(resource) && resource[4];
-  const label = isActive ? (resource[1] as string) : undefined;
+  const rawLabel = isActive ? (resource[1] as string) : undefined;
+  // Hide rows whose label can't round-trip through the URL (whitespace, uppercase,
+  // anything outside [a-z0-9-]). These are stranded artifacts from before input
+  // sanitization landed and the project page would just show "doesn't exist".
+  const isUrlSafe = !!rawLabel && /^[a-z0-9-]+$/.test(rawLabel);
+  const label = isUrlSafe ? rawLabel : undefined;
   const type = isActive ? (resource[2] as string) : undefined;
 
   const { data: proposal } = useScaffoldReadContract({

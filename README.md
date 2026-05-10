@@ -133,21 +133,24 @@ The bold names below are the on-chain `Status` enum (the pool's source of truth)
 
 ---
 
-## Demo state (live)
+## Demo (live)
 
-Visible at https://obec-prague.vercel.app:
+Visible at https://obec-prague.vercel.app — fresh registry as of the latest deploy. Walking through the dApp exercises the full flow:
 
-- `obec.eth` → `text("cities") = "prague"` (federation discovery — read by the home page footer)
-- `vinohrady.prague.obec.eth` — Prague neighborhood, admin set on creation
-- Member subnames — every wallet that joins via the dApp gets an **ENSIP-19 reverse name** registered automatically (Basescan shows `<label>.vinohrady.prague.obec.eth` instead of `0x…`)
-- `proposal-cargo-bikes.vinohrady.prague.obec.eth` — proposal subname auto-registered when the proposer calls `pool.createProposal`
-- `cargo-bikes.vinohrady.prague.obec.eth` — resource subname auto-created **atomically with milestone 0** when the threshold is hit. All five records resolve simultaneously:
-  - `addr(node)` → pool address
-  - `addr(node, 2147568180)` → same, ENSIP-11 multichain
-  - `text("funded-by")` → `proposal-cargo-bikes`
-  - `text("maintainer")` → executor address (frontend resolves to ENS)
+- **Federation discovery** — home reads `text("obec.eth", "cities")` to render the city index.
+- **Open a city** — anyone can seed `<city>.obec.eth` by creating its first neighborhood under it; no permissioned onboarding.
+- **Open a neighborhood** — first creator becomes admin. Namehash registered onchain; neighborhood resolves via ENS from any wallet.
+- **Join** — every member gets `<label>.<neighborhood>.<city>.obec.eth` plus an automatic **ENSIP-19** reverse name on Base Sepolia, so Basescan shows the full ENS name instead of `0x…`.
+- **Propose a project** — the project subname is registered atomically with the proposal. Threshold + deadline + auto-refund baked in.
+- **Commit / attest / release** — as the state machine advances, the pool writes `status`, `maintainer`, and `attestations` text records on the same subname. Funded projects expose:
+  - `addr(node)` → pool escrow address
+  - `addr(node, 2147568180)` → same, **ENSIP-11** multichain
+  - `text("status")` → `proposing` → `active` → `completed` (or `expired`)
+  - `text("maintainer")` → executor address
   - `text("attestations")` → comma-separated attester addresses
-  - `contenthash(node)` → IPFS CID slot (v2 pins real usage docs)
+  - `contenthash(node)` → IPFS CID slot
+
+All five record types resolve via standard `viem.getEnsAddress` / `getEnsText` lookups against Sepolia — no Obec-specific client code required.
 
 ---
 
