@@ -53,6 +53,11 @@ contract ObecRegistry {
 
     // 1-based index into neighborhoodResources[r.neighborhoodId]; 0 means "not present".
     // Tracked so deactivateResource is O(1) rather than scanning the array.
+    //
+    // Invariant: while resources[node].active is true, _resourceIndex[node] >= 1. Set together
+    // in registerResource and cleared together in deactivateResource. Read sites that subtract 1
+    // (currently only deactivateResource) rely on the active-check guard for underflow safety —
+    // no separate idx != 0 check is needed.
     mapping(bytes32 => uint256) private _resourceIndex;
 
     event NeighborhoodCreated(bytes32 indexed neighborhoodId, string city, string name, address admin);
@@ -207,7 +212,7 @@ contract ObecRegistry {
         emit TextSet(node, key, value);
     }
 
-    /// @notice Set ENS contenthash on a node (typically a proposal/resource pointing at IPFS).
+    /// @notice Set ENS contenthash on a node (typically a project node pointing at IPFS).
     function setContenthash(bytes32 node, bytes calldata hash) external {
         if (!_canModify(node, msg.sender)) revert Unauthorized();
         _contenthashes[node] = hash;
