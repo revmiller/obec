@@ -1,80 +1,113 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+/* ─────────────────────────────────────────────────────────────
+ * Obec — design tokens (friend.com / are.na vibe)
+ * Stark white paper, black ink, lowercase serif wordmark, soft warm
+ * gradient as the only color moment. Generous negative space.
+ * ───────────────────────────────────────────────────────────── */
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+:root {
+  /* Paper & ink */
+  --paper: #ffffff;
+  --paper-2: #fafafa;
+  --paper-3: #f3f3f1;
+  --card: #ffffff;
+  --ink: #0a0a0a;
+  --ink-2: #2a2a2a;
+  --ink-3: #6e6e6e;
+  --ink-4: #a8a8a8;
+  --ink-5: #d8d8d8;
+  --hair: #ececec;
+  --hair-2: #f4f4f4;
 
+  /* The single moment of color — soft warm radial */
+  --warm-1: #f3d6c2;
+  --warm-2: #ecbfb1;
+  --warm-3: #d9bba9;
+  --gradient-warm: radial-gradient(ellipse at 50% 50%, #f6dac8 0%, #ecc4b4 38%, #d8b8a6 70%, transparent 100%);
+  --gradient-cool: radial-gradient(ellipse at 50% 50%, #d4dde4 0%, #c8d2dc 38%, #b8c4d0 70%, transparent 100%);
+
+  /* Accents — used very sparingly */
+  --terracotta: #c2725a;
+  --terracotta-soft: #e0b09e;
+  --terracotta-bg: #f3e3da;
+  --ink-blue: #4a5666;
+  --ink-blue-bg: #e4e8ec;
+  --moss: #6f7758;
+  --moss-bg: #e6e8df;
+
+  /* Type — fonts are loaded via next/font in layout.tsx
+   * and exposed as --font-newsreader / --font-inter / --font-plex-mono */
+  --serif: var(--font-newsreader, "Newsreader"), "Times New Roman", serif;
+  --sans: var(--font-inter, "Inter"), system-ui, -apple-system, sans-serif;
+  --mono: var(--font-plex-mono, "IBM Plex Mono"), ui-monospace, monospace;
+
+  /* Spacing & radii */
+  --r-sm: 4px;
+  --r-md: 999px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Tailwind v4 theme — expose tokens to utility classes
+ * ───────────────────────────────────────────────────────────── */
 @theme {
   --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
   --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  --font-serif: var(--font-newsreader, "Newsreader"), "Times New Roman", serif;
+  --font-sans: var(--font-inter, "Inter"), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono, "IBM Plex Mono"), ui-monospace, monospace;
+
+  --color-paper: #ffffff;
+  --color-paper-2: #fafafa;
+  --color-paper-3: #f3f3f1;
+  --color-ink: #0a0a0a;
+  --color-ink-2: #2a2a2a;
+  --color-ink-3: #6e6e6e;
+  --color-ink-4: #a8a8a8;
+  --color-ink-5: #d8d8d8;
+  --color-hair: #ececec;
+  --color-hair-2: #f4f4f4;
+  --color-terracotta: #c2725a;
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * DaisyUI — single light theme mapped onto the obec palette.
+ * Keeps /debug + /blockexplorer (and any DaisyUI-classed scaffold
+ * components) inheriting paper + ink instead of blue scaffold-eth.
+ * ───────────────────────────────────────────────────────────── */
 @plugin "daisyui" {
-  themes:
-    light,
-    dark --prefersdark;
+  themes: light --default;
 }
 
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
+  --color-primary: #0a0a0a; /* ink */
+  --color-primary-content: #ffffff; /* paper */
+  --color-secondary: #f3f3f1; /* paper-3 */
+  --color-secondary-content: #0a0a0a;
+  --color-accent: #c2725a; /* terracotta */
+  --color-accent-content: #ffffff;
+  --color-neutral: #0a0a0a;
   --color-neutral-content: #ffffff;
   --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-base-200: #fafafa;
+  --color-base-300: #f3f3f1;
+  --color-base-content: #0a0a0a;
+  --color-info: #4a5666;
+  --color-success: #6f7758;
+  --color-warning: #c2725a;
+  --color-error: #c2725a;
 
-  --radius-field: 1rem;
-  --radius-box: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
   --tt-tailw: 6px;
 }
 
-@plugin "daisyui/theme" {
-  name: "dark";
-
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
-
-  --radius-field: 1rem;
-  --radius-box: 1rem;
-
-  --tt-tailw: 6px;
-  --tt-bg: var(--color-primary);
-}
-
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
+/* ─────────────────────────────────────────────────────────────
+ * Tailwind v3 → v4 border-color compatibility
+ * ───────────────────────────────────────────────────────────── */
 @layer base {
   *,
   ::after,
@@ -82,10 +115,6 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
-  }
-
-  p {
-    margin: 1rem 0;
   }
 
   body {
@@ -103,22 +132,376 @@
 
 :root,
 [data-theme] {
-  background: var(--color-base-200);
+  background: var(--paper);
 }
 
-.btn {
-  @apply shadow-md;
-  border-radius: 9999rem;
+/* ─────────────────────────────────────────────────────────────
+ * Obec design system classes — scoped to .obec on <body>.
+ * Lifted verbatim from drafts/design_handoff_obec/obec/tokens.css
+ * ───────────────────────────────────────────────────────────── */
+
+.obec {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  font-feature-settings: "ss01", "cv11";
 }
 
-.btn.btn-ghost {
-  @apply shadow-none;
+.obec .serif {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+.obec .mono {
+  font-family: var(--mono);
+  letter-spacing: 0;
 }
 
+/* Wordmark — friend.com style */
+.obec .wordmark {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+
+/* Eyebrow / micro caps */
+.obec .small-caps,
+.obec .micro {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+}
+.obec .micro.ink {
+  color: var(--ink);
+}
+
+/* ENS path — quiet mono */
+.obec .ens {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: 0;
+}
+.obec .ens .ens-self {
+  color: var(--ink);
+  font-weight: 500;
+}
+.obec .ens .ens-parent {
+  color: var(--ink-3);
+}
+.obec .ens .ens-tld {
+  color: var(--ink-3);
+}
+.obec .ens .ens-dot {
+  color: var(--ink-4);
+  margin: 0 1px;
+}
+
+/* Hairlines */
+.obec hr {
+  border: 0;
+  border-top: 1px solid var(--hair);
+  margin: 32px 0;
+}
+
+/* Pill button — friend.com */
+.obec .obec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 14.5px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  transition: 120ms ease;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+}
+.obec .obec-btn:hover {
+  transform: translateY(-1px);
+}
+.obec .obec-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.obec .obec-btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--hair);
+}
+.obec .obec-btn.ghost:hover {
+  border-color: var(--ink);
+}
+.obec .obec-btn.terracotta {
+  background: var(--ink);
+}
+.obec .obec-btn.sm {
+  font-size: 13px;
+  padding: 9px 16px;
+}
+.obec .obec-btn.lg {
+  font-size: 16px;
+  padding: 16px 28px;
+}
+.obec .obec-btn .arrow {
+  display: inline-block;
+  transition: 160ms;
+}
+.obec .obec-btn:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* Pill — small status chips */
+.obec .obec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-md);
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--paper-3);
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+.obec .obec-pill .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+.obec .obec-pill.terracotta {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+.obec .obec-pill.terracotta .dot {
+  background: var(--terracotta);
+}
+.obec .obec-pill.moss {
+  background: transparent;
+  color: var(--ink-3);
+  border: 1px solid var(--hair);
+}
+.obec .obec-pill.moss .dot {
+  background: var(--ink);
+}
+
+/* SectionHead */
+.obec .section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+}
+.obec .section-head .num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+.obec .section-head h2 {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.1;
+  flex: 1;
+}
+
+/* Meter */
+.obec .meter {
+  width: 100%;
+  height: 4px;
+  background: var(--hair);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.obec .meter .fill {
+  height: 100%;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: width 320ms ease;
+}
+.obec .meter .threshold {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--ink-3);
+}
+
+/* Glow — the warm-radial moment */
+.obec .glow {
+  position: relative;
+}
+.obec .glow::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: var(--gradient-warm);
+  filter: blur(20px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+.obec .glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Are.na index */
+.obec .arena-index {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 56px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+@media (min-width: 640px) {
+  .obec .arena-index {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .obec .arena-index {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.obec .arena-index a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  padding: 1px 0;
+  cursor: pointer;
+}
+.obec .arena-index a:hover {
+  color: var(--ink-3);
+}
+.obec .arena-index a .meta {
+  color: var(--ink-3);
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* FAQ row */
+.obec .faq-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 4px;
+  border-top: 1px solid var(--hair);
+  font-size: 18px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.obec .faq-row:last-child {
+  border-bottom: 1px solid var(--hair);
+}
+.obec .faq-row .plus {
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  user-select: none;
+  transition: transform 160ms ease;
+}
+.obec .faq-row.open .plus {
+  transform: rotate(45deg);
+}
+
+/* Avatar — paper disc */
+.obec .obec-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 10px;
+  background: var(--paper-3);
+  color: var(--ink-2);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.obec .obec-avatar.lg {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+.obec .obec-avatar.sm {
+  width: 18px;
+  height: 18px;
+  font-size: 9px;
+}
+
+/* Hatched placeholder */
+.obec .hatch {
+  background: repeating-linear-gradient(135deg, var(--hair) 0 1px, transparent 1px 7px);
+  border: 1px solid var(--hair);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Misc */
+.obec .num-tag {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.obec .num {
+  font-variant-numeric: tabular-nums;
+}
+.obec .protocol-only {
+  color: var(--ink-3);
+}
+
+/* Scrollbar */
+.obec ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.obec ::-webkit-scrollbar-thumb {
+  background: var(--ink-5);
+  border-radius: 3px;
+}
+.obec ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Link defaults */
 .link {
   text-underline-offset: 2px;
 }
-
 .link:hover {
   opacity: 80%;
 }
