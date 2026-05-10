@@ -27,7 +27,6 @@ const NAMES =
     : [
         `vinohrady.prague.${PROTOCOL_ROOT}`,
         `anna.vinohrady.prague.${PROTOCOL_ROOT}`,
-        `proposal-cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
         `cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
       ];
 
