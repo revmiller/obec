@@ -16,6 +16,7 @@ anna . vinohrady . prague . obec.eth
 Built for **ETHPrague 2026**.
 
 - 🌐 **Live demo**: https://obec-prague.vercel.app
+- 🎥 **Demo video**: https://x.com/revrfg/status/2053414317509255176
 - 🔎 **Protocol root**: [`obec.eth`](https://sepolia.app.ens.domains/obec.eth) (Sepolia ENS)
 - 📜 **All contracts verified** on Etherscan + Basescan ([see addresses](#deployed-contracts))
 
