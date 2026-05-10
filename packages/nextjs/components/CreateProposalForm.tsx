@@ -54,25 +54,29 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   if (!address || !isMember) return null;
 
   const submit = async () => {
+    // Trim + lowercase: label becomes part of the ENS subname namehash, so any whitespace
+    // or case difference breaks subsequent reads (the URL `/p/<label>` won't round-trip).
+    const labelClean = label.trim().toLowerCase();
+    const typeClean = resourceType.trim().toLowerCase();
     const deadline = BigInt(Math.floor(Date.now() / 1000) + Number(deadlineDays) * 86400);
     await createProposal({
       functionName: "createProposal",
       args: [
         {
           neighborhoodId,
-          label,
+          label: labelClean,
           executor: executor as Address,
           targetAmount: parseUnits(targetUsd, USDC_DECIMALS),
           minMembers: BigInt(minMembers),
           deadline,
           warrantyDuration: DEFAULT_WARRANTY_SECONDS,
           attestationThreshold: BigInt(attestationThreshold),
-          resourceType,
+          resourceType: typeClean,
         },
       ],
     });
     if (description.trim()) {
-      const proposalNode = namehash(`${label}.${neighborhood}.${city}.${PROTOCOL_ROOT}`);
+      const proposalNode = namehash(`${labelClean}.${neighborhood}.${city}.${PROTOCOL_ROOT}`);
       await setText({
         functionName: "setText",
         args: [proposalNode, "description", description.trim()],
@@ -101,7 +105,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
         <Field
           label="Label (becomes the subname)"
           value={label}
-          onChange={setLabel}
+          onChange={v => setLabel(v.trim().toLowerCase().replace(/\s+/g, "-"))}
           mono
           placeholder="e.g. cargo-bikes"
         />
@@ -142,7 +146,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           <Field
             label="Project type"
             value={resourceType}
-            onChange={setResourceType}
+            onChange={v => setResourceType(v.trim().toLowerCase())}
             placeholder="e.g. mobility, tool, space, energy"
           />
         </div>
