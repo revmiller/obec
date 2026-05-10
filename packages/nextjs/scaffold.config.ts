@@ -14,10 +14,12 @@ export type ScaffoldConfig = BaseConfig;
 export const DEFAULT_ALCHEMY_API_KEY = "cR4WnXePioePZ5fFrnSiR";
 
 const scaffoldConfig = {
-  // The networks on which your DApp is live
-  // Base Sepolia hosts Registry + Pool contracts; Sepolia hosts the ENS resolver.
-  // chains.foundry included for local development.
-  targetNetworks: [chains.foundry, chains.baseSepolia, chains.sepolia],
+  // The networks on which your DApp is live.
+  // Base Sepolia first so it's the production default when no wallet is connected
+  // (or when the connected wallet's chain isn't in this list). Base Sepolia hosts
+  // Registry + Pool contracts; Sepolia hosts the ENS resolver. chains.foundry stays
+  // available for local development but no longer the default target.
+  targetNetworks: [chains.baseSepolia, chains.sepolia, chains.foundry],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 3000,
   // This is ours Alchemy's default API key.
