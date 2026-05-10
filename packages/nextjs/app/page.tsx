@@ -1,52 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import type { NextPage } from "next";
+import { type Hex, formatUnits } from "viem";
+import { useReadContracts } from "wagmi";
+import { CitiesIndex } from "~~/components/CitiesIndex";
+import { GlobalWireFeed } from "~~/components/GlobalWireFeed";
 import { LinkButton, SectionHead } from "~~/components/obec";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldEventHistory, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
+const USDC_DECIMALS = 6;
+const STATUS_ACTIVE = 1;
+const STATUS_EXECUTING = 2;
 
-const SEEDED_CITIES: City[] = [
-  {
-    id: "prague",
-    name: "Prague",
-    status: "live",
-    neighborhoods: 1,
-    members: 15,
-    pools: 6,
-    tvl: 19100,
-    blurb: "First neighborhood: Vinohrady. Three more in conversation across Karlín, Smíchov, Žižkov.",
-    href: "/prague/vinohrady",
-  },
-  { id: "berlin", name: "Berlin", status: "pending" },
-  { id: "lisbon", name: "Lisbon", status: "pending" },
-];
-
-const WIRE: WireItem[] = [
-  {
-    t: "4m",
-    who: "tomas",
-    verb: "committed 200 USDC to",
-    what: "cargo-bikes",
-    body: "Pool now at 38 of 50 backers. Threshold 91% reached; closes in three days.",
-  },
-  {
-    t: "1h",
-    who: "eliska",
-    verb: "proposed",
-    what: "community sauna · Korunní 32",
-    body: "Twelve-household coalition. Seeking 6,000 USDC for the timber and stove. Twenty-day window.",
-  },
-  {
-    t: "3h",
-    who: "anna",
-    verb: "released milestone 02 of",
-    what: "repair-cafe",
-    body: "Tools delivered, signed receipts on chain. Treasury releases 1,200 USDC of the remaining 1,800.",
-  },
-];
+function fmtUsd(n: number): string {
+  if (n === 0) return "$0";
+  if (n >= 1000) return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  return `$${n.toLocaleString()}`;
+}
 
 const FAQ_ITEMS: { q: string; a: string }[] = [
   {
@@ -75,20 +48,6 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
 ];
 
-type City = {
-  id: string;
-  name: string;
-  status: "live" | "pending";
-  neighborhoods?: number;
-  members?: number;
-  pools?: number;
-  tvl?: number;
-  blurb?: string;
-  href?: string;
-};
-
-type WireItem = { t: string; who: string; verb: string; what: string; body: string };
-
 const Home: NextPage = () => {
   const { data: rootNamehash } = useScaffoldReadContract({
     contractName: "ObecRegistry",
@@ -100,10 +59,72 @@ const Home: NextPage = () => {
     args: rootNamehash ? [rootNamehash, "cities"] : [undefined, undefined],
   });
 
-  const totalPooled = SEEDED_CITIES.reduce((acc, c) => acc + (c.tvl ?? 0), 0);
-  const totalMembers = SEEDED_CITIES.reduce((acc, c) => acc + (c.members ?? 0), 0);
-  const totalPools = SEEDED_CITIES.reduce((acc, c) => acc + (c.pools ?? 0), 0);
-  const liveCities = SEEDED_CITIES.filter(c => c.status === "live");
+  // Discover live cities + counts from registry events to drive the hero strip.
+  const { data: createdEvents } = useScaffoldEventHistory({
+    contractName: "ObecRegistry",
+    eventName: "NeighborhoodCreated",
+    fromBlock: undefined,
+    watch: true,
+  });
+  const { data: joinedEvents } = useScaffoldEventHistory({
+    contractName: "ObecRegistry",
+    eventName: "MemberJoined",
+    fromBlock: undefined,
+    watch: true,
+  });
+  const { data: registeredEvents } = useScaffoldEventHistory({
+    contractName: "ObecRegistry",
+    eventName: "ResourceRegistered",
+    fromBlock: undefined,
+    watch: true,
+  });
+
+  const liveCitySet = new Set<string>();
+  if (createdEvents) {
+    for (const e of createdEvents) {
+      const c = (e.args as { city?: string } | undefined)?.city?.toLowerCase();
+      if (c) liveCitySet.add(c);
+    }
+  }
+  const totalMembers = joinedEvents?.length ?? 0;
+  const firstCity = Array.from(liveCitySet)[0];
+
+  // Multicall every proposal-typed resource to derive pooled USDC + active count
+  // straight from contract state, not just event log presence.
+  const proposalNodes: Hex[] =
+    registeredEvents
+      ?.filter(e => (e.args as { resourceType?: string } | undefined)?.resourceType === "proposal")
+      .map(e => (e.args as { resourceNode?: Hex } | undefined)?.resourceNode)
+      .filter((n): n is Hex => !!n) ?? [];
+
+  const { data: pool } = useDeployedContractInfo({
+    contractName: "CommitmentPool",
+    chainId: STATE_CHAIN_ID,
+  });
+
+  const { data: proposalTuples } = useReadContracts({
+    contracts: proposalNodes.map(node => ({
+      address: pool?.address,
+      abi: pool?.abi,
+      functionName: "getProposal",
+      args: [node],
+      chainId: STATE_CHAIN_ID,
+    })) as any,
+    query: { enabled: !!pool && proposalNodes.length > 0 },
+  });
+
+  let pooledRaw = 0n;
+  let activePools = 0;
+  if (proposalTuples) {
+    for (const p of proposalTuples) {
+      const prop = p.result as { totalCommitted?: bigint; status?: number | bigint } | undefined;
+      if (!prop) continue;
+      pooledRaw += prop.totalCommitted ?? 0n;
+      const s = Number(prop.status ?? 0);
+      if (s === STATUS_ACTIVE || s === STATUS_EXECUTING) activePools += 1;
+    }
+  }
+  const pooledUsd = Number(formatUnits(pooledRaw, USDC_DECIMALS));
 
   return (
     <div className="flex flex-col grow">
@@ -138,8 +159,8 @@ const Home: NextPage = () => {
           </p>
 
           <div className="mt-10 lg:mt-14 flex gap-4 items-center flex-wrap">
-            <LinkButton href="/prague/vinohrady" size="lg" arrow>
-              Browse neighborhoods
+            <LinkButton href={firstCity ? `/${firstCity}` : "/"} size="lg" arrow>
+              {firstCity ? "Browse neighborhoods" : "Open the first city"}
             </LinkButton>
           </div>
 
@@ -147,12 +168,15 @@ const Home: NextPage = () => {
             className="mt-12 grid grid-cols-2 gap-x-14 gap-y-1.5"
             style={{ fontSize: 14, color: "var(--ink-2)", maxWidth: 480 }}
           >
-            <span>${totalPooled.toLocaleString()} pooled</span>
+            <span>{fmtUsd(pooledUsd)} pooled</span>
             <span>
-              {liveCities.length} city · {liveCities[0]?.name ?? "—"}
+              {liveCitySet.size} {liveCitySet.size === 1 ? "city" : "cities"}
+              {firstCity ? ` · ${firstCity}` : ""}
             </span>
             <span>{totalMembers} members</span>
-            <span>{totalPools} active pools</span>
+            <span>
+              {activePools} active {activePools === 1 ? "pool" : "pools"}
+            </span>
             <span>No subscription</span>
             <span>Built on ENS · Base</span>
           </div>
@@ -195,22 +219,11 @@ const Home: NextPage = () => {
       {/* Cities */}
       <section className="px-6 sm:px-12 lg:px-24 pb-24 lg:pb-28">
         <div className="mb-12">
-          <SectionHead
-            num="01"
-            right={
-              <span className="micro">
-                {SEEDED_CITIES.length} federated · {liveCities.length} live
-              </span>
-            }
-          >
+          <SectionHead num="01" right={<span className="micro">{liveCitySet.size} live</span>}>
             Cities
           </SectionHead>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-          {SEEDED_CITIES.map((c, i) => (
-            <CityCard key={c.id} city={c} index={i} />
-          ))}
-        </div>
+        <CitiesIndex federated={typeof federatedCities === "string" ? federatedCities : undefined} />
       </section>
 
       {/* From the wire */}
@@ -220,30 +233,7 @@ const Home: NextPage = () => {
             From the wire
           </SectionHead>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
-          {WIRE.map((a, i) => (
-            <article key={i} style={{ borderTop: "1px solid var(--ink)", paddingTop: 18 }}>
-              <div className="micro" style={{ fontSize: 11 }}>
-                {a.t} ago&nbsp;·&nbsp;vinohrady.prague
-              </div>
-              <h4
-                className="serif"
-                style={{
-                  fontSize: 22,
-                  fontWeight: 400,
-                  lineHeight: 1.25,
-                  margin: "14px 0 0",
-                  letterSpacing: "-0.015em",
-                }}
-              >
-                {a.who}
-                <span style={{ color: "var(--ink-3)", fontStyle: "italic" }}>&nbsp;{a.verb}&nbsp;</span>
-                <em style={{ fontStyle: "italic" }}>{a.what}</em>
-              </h4>
-              <p style={{ fontSize: 14.5, color: "var(--ink-2)", marginTop: 14, lineHeight: 1.5 }}>{a.body}</p>
-            </article>
-          ))}
-        </div>
+        <GlobalWireFeed limit={3} />
       </section>
 
       {/* FAQ */}
@@ -260,94 +250,6 @@ const Home: NextPage = () => {
     </div>
   );
 };
-
-function CityCard({ city: c, index: i }: { city: City; index: number }) {
-  const live = c.status === "live";
-  const inner = (
-    <article style={{ position: "relative" }}>
-      <div className="num-tag" style={{ marginBottom: 18, fontSize: 11, letterSpacing: "0.04em" }}>
-        No.&nbsp;0{i + 1}
-      </div>
-      <h3
-        className="serif"
-        style={{ fontSize: 56, margin: 0, fontWeight: 400, letterSpacing: "-0.035em", lineHeight: 0.95 }}
-      >
-        {c.name.toLowerCase()}
-      </h3>
-      <div className="ens mt-3.5" style={{ fontSize: 12 }}>
-        <span className="ens-self">{c.id}</span>
-        <span className="ens-dot">.</span>
-        <span className="ens-tld">{PROTOCOL_ROOT}</span>
-      </div>
-      {live ? (
-        <>
-          <p style={{ fontSize: 15, color: "var(--ink-2)", marginTop: 22, lineHeight: 1.45, maxWidth: 320 }}>
-            {c.blurb}
-          </p>
-          <div style={{ marginTop: 28, display: "flex", gap: 32, fontSize: 13, color: "var(--ink-2)" }}>
-            <span>
-              <span style={{ color: "var(--ink)", fontWeight: 500 }}>{c.neighborhoods}</span> hood
-            </span>
-            <span>
-              <span style={{ color: "var(--ink)", fontWeight: 500 }}>{c.members}</span> members
-            </span>
-            <span>
-              <span style={{ color: "var(--ink)", fontWeight: 500 }}>${((c.tvl ?? 0) / 1000).toFixed(1)}k</span> pooled
-            </span>
-          </div>
-          <div style={{ marginTop: 28 }}>
-            <span
-              style={{
-                fontSize: 14,
-                color: "var(--ink)",
-                borderBottom: "1px solid var(--ink)",
-                paddingBottom: 1,
-              }}
-            >
-              Enter {c.name} →
-            </span>
-          </div>
-        </>
-      ) : (
-        <>
-          <p
-            style={{
-              fontSize: 15,
-              color: "var(--ink-3)",
-              marginTop: 22,
-              lineHeight: 1.45,
-              maxWidth: 320,
-              fontStyle: "italic",
-            }}
-          >
-            Awaiting first neighborhood.
-          </p>
-          <div style={{ marginTop: 28 }}>
-            <span
-              style={{
-                fontSize: 13,
-                color: "var(--ink-3)",
-                borderBottom: "1px solid var(--hair)",
-                paddingBottom: 1,
-              }}
-            >
-              Claim {c.id}.{PROTOCOL_ROOT} →
-            </span>
-          </div>
-        </>
-      )}
-    </article>
-  );
-
-  if (live && c.href) {
-    return (
-      <Link href={c.href} style={{ textDecoration: "none", color: "inherit" }}>
-        {inner}
-      </Link>
-    );
-  }
-  return inner;
-}
 
 function FaqRow({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);

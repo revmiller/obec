@@ -24,20 +24,18 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
-  const [label, setLabel] = useState("cargo-bikes");
+  const [label, setLabel] = useState("");
   const [executor, setExecutor] = useState<string>("");
-  const [description, setDescription] = useState(
-    "Two e-cargo bikes for our building. 14 households share unlimited access via key cabinet + booking calendar. Replaces ~80% of family car trips for groceries, school runs, and hardware store hauls.",
-  );
+  const [description, setDescription] = useState("");
   // Default executor to the connected wallet so solo testing skips manual paste.
   useEffect(() => {
     if (address && !executor) setExecutor(address);
   }, [address, executor]);
-  const [targetUsd, setTargetUsd] = useState("8000");
-  const [minMembers, setMinMembers] = useState("14");
-  const [attestationThreshold, setAttestationThreshold] = useState("8");
+  const [targetUsd, setTargetUsd] = useState("");
+  const [minMembers, setMinMembers] = useState("");
+  const [attestationThreshold, setAttestationThreshold] = useState("");
   const [deadlineDays, setDeadlineDays] = useState("30");
-  const [resourceType, setResourceType] = useState("mobility");
+  const [resourceType, setResourceType] = useState("");
 
   const { data: connectedNode } = useScaffoldReadContract({
     contractName: "ObecRegistry",
@@ -100,7 +98,13 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
         <h3 className="serif" style={{ fontSize: 22, fontWeight: 400, letterSpacing: "-0.02em", margin: 0 }}>
           New proposal
         </h3>
-        <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
+        <Field
+          label="Label (becomes the subname)"
+          value={label}
+          onChange={setLabel}
+          mono
+          placeholder="e.g. cargo-bikes"
+        />
         <Field label="Executor address" value={executor} onChange={setExecutor} mono placeholder="0x…" />
         <label className="block">
           <span className="micro" style={{ fontSize: 11 }}>
@@ -110,6 +114,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={3}
+            placeholder="What is this pool for? Who benefits, what gets bought, how does it run?"
             className="block w-full mt-2"
             style={{
               padding: 10,
@@ -125,14 +130,36 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           />
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Target (USD ≈ USDC)" value={targetUsd} onChange={setTargetUsd} />
-          <Field label="Min members" value={minMembers} onChange={setMinMembers} />
-          <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
+          <Field label="Target (USD ≈ USDC)" value={targetUsd} onChange={setTargetUsd} placeholder="e.g. 5000" />
+          <Field label="Min members" value={minMembers} onChange={setMinMembers} placeholder="e.g. 10" />
+          <Field
+            label="Attestations needed"
+            value={attestationThreshold}
+            onChange={setAttestationThreshold}
+            placeholder="e.g. 5"
+          />
           <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />
-          <Field label="Project type" value={resourceType} onChange={setResourceType} />
+          <Field
+            label="Project type"
+            value={resourceType}
+            onChange={setResourceType}
+            placeholder="e.g. mobility, tool, space, energy"
+          />
         </div>
         <div className="flex gap-2">
-          <button className="obec-btn sm" disabled={isPending || !executor} onClick={submit}>
+          <button
+            className="obec-btn sm"
+            disabled={
+              isPending ||
+              !executor ||
+              !label.trim() ||
+              !targetUsd ||
+              !minMembers ||
+              !attestationThreshold ||
+              !resourceType.trim()
+            }
+            onClick={submit}
+          >
             {isPending ? "Creating…" : "Create proposal"} <span className="arrow">→</span>
           </button>
           <button className="obec-btn ghost sm" onClick={() => setOpen(false)}>

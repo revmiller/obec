@@ -8,7 +8,9 @@ import { CreateProposalForm } from "~~/components/CreateProposalForm";
 import { JoinNeighborhoodButton } from "~~/components/JoinNeighborhoodButton";
 import { MemberRow } from "~~/components/MemberRow";
 import { NeighborhoodDescription } from "~~/components/NeighborhoodDescription";
+import { NeighborhoodStats } from "~~/components/NeighborhoodStats";
 import { ResourceRow } from "~~/components/ResourceRow";
+import { WireFeed } from "~~/components/WireFeed";
 import { ENSName, NamehashChip, SectionHead } from "~~/components/obec";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
@@ -21,7 +23,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
   const fullName = `${neighborhood}.${city}.${PROTOCOL_ROOT}`;
   const neighborhoodId = namehash(fullName);
 
-  const { data: hood } = useScaffoldReadContract({
+  const { data: hood, isPending: hoodPending } = useScaffoldReadContract({
     contractName: "ObecRegistry",
     functionName: "neighborhoods",
     args: [neighborhoodId],
@@ -39,7 +41,8 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
     args: [neighborhoodId],
   });
 
-  const exists = hood && Array.isArray(hood) && hood[3] === true;
+  const checked = !hoodPending;
+  const exists = checked && Array.isArray(hood) && hood[3] === true;
   const admin = exists ? (hood[2] as `0x${string}`) : undefined;
   const memberCount = Array.isArray(memberNodes) ? memberNodes.length : 0;
   const projectCount = Array.isArray(projectNodes) ? projectNodes.length : 0;
@@ -64,7 +67,9 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
         <div className="glow inline-block" style={{ padding: "20px 40px", margin: "-20px -40px" }}>
           <div className="micro" style={{ marginBottom: 20 }}>
             Neighborhood register&nbsp;·&nbsp;
-            <span style={{ color: "var(--ink)" }}>{exists ? "active" : "not yet created"}</span>
+            <span style={{ color: "var(--ink)" }}>
+              {!checked ? "checking…" : exists ? "active" : "not yet created"}
+            </span>
           </div>
           <h1
             className="serif"
@@ -99,7 +104,9 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
           <NamehashChip name={fullName} />
         </div>
 
-        {!exists ? (
+        {!checked ? (
+          <div className="mt-10" style={{ height: 132 }} aria-hidden />
+        ) : !exists ? (
           <div className="mt-10 p-6 max-w-xl" style={{ border: "1px solid var(--hair)", borderRadius: 4 }}>
             <p style={{ fontSize: 17, color: "var(--ink-2)", margin: 0 }}>This neighborhood doesn&apos;t exist yet.</p>
             <p style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 8, marginBottom: 0 }}>
@@ -121,37 +128,8 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
 
       {exists && (
         <>
-          {/* Stats band */}
-          <section
-            className="grid grid-cols-2 lg:grid-cols-4"
-            style={{ borderTop: "1px solid var(--hair)", borderBottom: "1px solid var(--hair)" }}
-          >
-            {[
-              { n: String(memberCount), l: "members", sub: "subnames issued" },
-              { n: String(projectCount), l: "pools", sub: "across this neighborhood" },
-              { n: "—", l: "pooled", sub: "across treasury & milestones" },
-              { n: "—", l: "active drives", sub: "fundraising right now" },
-            ].map((s, i, arr) => (
-              <div
-                key={s.l}
-                style={{
-                  padding: "28px 32px",
-                  borderRight: i < arr.length - 1 ? "1px solid var(--hair)" : "none",
-                }}
-              >
-                <div
-                  className="serif num"
-                  style={{ fontSize: 42, fontWeight: 400, lineHeight: 1, letterSpacing: "-0.03em" }}
-                >
-                  {s.n}
-                </div>
-                <div className="micro" style={{ marginTop: 10, fontSize: 11 }}>
-                  {s.l}
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 6 }}>{s.sub}</div>
-              </div>
-            ))}
-          </section>
+          {/* Stats band — fully on-chain */}
+          <NeighborhoodStats neighborhoodId={neighborhoodId} memberCount={memberCount} />
 
           {/* The commons */}
           <section className="px-6 sm:px-12 lg:px-14 pt-16 pb-20">
@@ -205,16 +183,12 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
                 Wire
               </SectionHead>
               <div className="mt-5">
-                <div
-                  style={{
-                    padding: "14px 0",
-                    borderTop: "1px solid var(--ink)",
-                    fontSize: 13,
-                    color: "var(--ink-3)",
-                  }}
-                >
-                  Wire feed will populate from on-chain events once the indexer is wired.
-                </div>
+                <WireFeed
+                  neighborhoodId={neighborhoodId}
+                  projectNodes={(projectNodes as readonly `0x${string}`[]) ?? []}
+                  city={city}
+                  neighborhood={neighborhood}
+                />
               </div>
             </div>
           </section>

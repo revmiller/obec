@@ -15,7 +15,9 @@ anna . vinohrady . prague . obec.eth
 
 Built for **ETHPrague 2026**.
 
-🌐 **Live demo**: wip
+- 🌐 **Live demo**: https://obec-prague.vercel.app
+- 🔎 **Protocol root**: [`obec.eth`](https://sepolia.app.ens.domains/obec.eth) (Sepolia ENS)
+- 📜 **All contracts verified** on Etherscan + Basescan ([see addresses](#deployed-contracts))
 
 ---
 
@@ -35,14 +37,57 @@ Concrete instances of *ENS doing real work, not display*:
 
 ## ENS standards in play
 
-| Standard | Where |
-|---|---|
-| ENSIP-10 wildcard (`IExtendedResolver`) | `ObecResolver.sol` |
-| EIP-3668 CCIP-Read | Resolver + Next.js gateway at `/api/ccip/[sender]/[callData]` |
-| ENSIP-9/11 multi-coin | Gateway returns Base Sepolia addr for coinType 2147568180 |
-| ENSIP-7 contenthash | Project subnames expose a contenthash slot (v1 demo seeds a placeholder; v2 pins real docs) |
-| ENSIP-19 default reverse (L2) | Member wallets register reverse names via `L2ReverseRegistrar` on Base Sepolia |
-| EIP-137 namehash | All text records keyed by canonical namehash via `NameCoder` |
+Each row links to the official spec and the exact implementation in this repo.
+
+| Standard | Spec | Implementation |
+|---|---|---|
+| **ENSIP-10** wildcard (`IExtendedResolver`) | [docs.ens.domains/ensip/10](https://docs.ens.domains/ensip/10) | [`ObecResolver.sol#L75`](packages/foundry/contracts/ObecResolver.sol#L75) — `resolve()` always reverts with `OffchainLookup`; [`#L69`](packages/foundry/contracts/ObecResolver.sol#L69) — `supportsInterface(IExtendedResolver)` returns true |
+| **EIP-3668** CCIP-Read | [eips.ethereum.org/EIPS/eip-3668](https://eips.ethereum.org/EIPS/eip-3668) | Resolver: [`ObecResolver.sol`](packages/foundry/contracts/ObecResolver.sol); gateway: [`route.ts`](packages/nextjs/app/api/ccip/[sender]/[callData]/route.ts) + [`ccip-handler.ts`](packages/nextjs/lib/ccip-handler.ts); EIP-191 v0 signing: [`ccip-signer.ts`](packages/nextjs/lib/ccip-signer.ts) |
+| **ENSIP-9 / ENSIP-11** multi-coin (Base Sepolia coinType `2147568180`) | [ensip/9](https://docs.ens.domains/ensip/9) · [ensip/11](https://docs.ens.domains/ensip/11) | [`ccip-handler.ts#L99`](packages/nextjs/lib/ccip-handler.ts#L99) — strict legacy/multi-coin return-type split; [`coin-types.ts`](packages/nextjs/lib/coin-types.ts) — canonical constants |
+| **ENSIP-7** contenthash | [ensip/7](https://docs.ens.domains/ensip/7) · [EIP-1577](https://eips.ethereum.org/EIPS/eip-1577) | [`ObecRegistry.sol#L175`](packages/foundry/contracts/ObecRegistry.sol#L175) `setContenthash`; gateway: [`ccip-handler.ts#L154`](packages/nextjs/lib/ccip-handler.ts#L154) |
+| **ENSIP-19** default L2 reverse (Basescan shows `anna.vinohrady.prague.obec.eth` instead of `0x…`) | [docs.ens.domains/ensip/19](https://docs.ens.domains/ensip/19) | [`JoinNeighborhoodButton.tsx`](packages/nextjs/components/JoinNeighborhoodButton.tsx) — every join auto-fires `L2ReverseRegistrar.setName`. Canonical address: `0x00000BeEF055f7934784D6d81b6BC86665630dbA` |
+| **EIP-137** namehash | [eips.ethereum.org/EIPS/eip-137](https://eips.ethereum.org/EIPS/eip-137) | `ObecRegistry` uses `NameCoder.namehash` from [ensdomains/ens-contracts](https://github.com/ensdomains/ens-contracts); frontend uses `viem.namehash` for cross-language correctness |
+| **State-machine writes ENS atomically** (the central creative beat) | — | [`CommitmentPool.sol#L247`](packages/foundry/contracts/CommitmentPool.sol#L247) — `_transitionToFunded` creates resource subname + writes 3 text records + releases milestone 0, all in one tx |
+| **Federation discovery on protocol root** | — | [`ObecRegistry.sol#L181`](packages/foundry/contracts/ObecRegistry.sol#L181) — `_canModify` permits owner to write text records on `PROTOCOL_ROOT_NAMEHASH`. Seeded value: `text(obec.eth, "cities") = "prague"` |
+
+---
+
+## Deployed contracts
+
+All four contracts deployed and **source-verified** on the official block explorers.
+
+| Contract | Chain | Address | Verified |
+|---|---|---|---|
+| [`ObecRegistry`](packages/foundry/contracts/ObecRegistry.sol) | Base Sepolia (84532) | `0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD` | [Basescan ✓](https://sepolia.basescan.org/address/0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD#code) |
+| [`CommitmentPool`](packages/foundry/contracts/CommitmentPool.sol) | Base Sepolia (84532) | `0x054DBdDed5eB83E602909AafCb1d41d83d83D09b` | [Basescan ✓](https://sepolia.basescan.org/address/0x054DBdDed5eB83E602909AafCb1d41d83d83D09b#code) |
+| [`MockUSDC`](packages/foundry/contracts/MockUSDC.sol) | Base Sepolia (84532) | `0x60e311214A3cB883032A270EC7dC2f42905cbD1F` | [Basescan ✓](https://sepolia.basescan.org/address/0x60e311214A3cB883032A270EC7dC2f42905cbD1F#code) |
+| [`ObecResolver`](packages/foundry/contracts/ObecResolver.sol) | Sepolia (11155111) | `0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD` | [Etherscan ✓](https://sepolia.etherscan.io/address/0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD#code) |
+
+ENS Sepolia Registry at `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` has `setResolver(namehash("obec.eth"), 0xedA49…7bbD)`. Verify yourself:
+
+```bash
+cast call 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e \
+  "resolver(bytes32)" $(cast namehash obec.eth) \
+  --rpc-url https://eth-sepolia.g.alchemy.com/v2/<key>
+# returns 0x000…edA49dB1213e783EF25DE41f9B4E82711F8D7bbD
+```
+
+---
+
+## Verify the ENS flow yourself
+
+The cryptographic-correctness proof: **standard ENS infra resolves Obec subnames live, with no Obec-specific code on the client side.**
+
+```bash
+NEXT_PUBLIC_PROTOCOL_ROOT=obec.eth \
+NEXT_PUBLIC_ALCHEMY_API_KEY=<your-key> \
+npx tsx packages/nextjs/scripts/smoke-test.ts \
+  vinohrady.prague.obec.eth \
+  <member>.vinohrady.prague.obec.eth \
+  cargo-bikes.vinohrady.prague.obec.eth
+```
+
+Full path on each lookup: `viem.getEnsAddress` on Sepolia → ENS Registry → `ObecResolver.resolve()` reverts with `OffchainLookup` → viem follows to `obec-prague.vercel.app/api/ccip/{sender}/{data}` → gateway queries `ObecRegistry` on Base Sepolia → signs response (EIP-191 v0, intended-validator scheme) → viem submits to `resolveWithProof` → resolver verifies signature on-chain → result returned. Round-trip ~300ms with 60s in-memory cache.
 
 ---
 
@@ -88,22 +133,21 @@ The bold names below are the on-chain `Status` enum (the pool's source of truth)
 
 ---
 
-## Demo state
+## Demo state (live)
 
-The Base Sepolia demo state shows:
+Visible at https://obec-prague.vercel.app:
 
-- `obec.eth` → `text("cities") = "prague"` (federation discovery)
-- `vinohrady.prague.obec.eth` — (example) Prague neighborhood with 15 members
-- 15 member subnames (`anna…ondra`) with **ENSIP-19 reverse names** registered on Base Sepolia (Basescan shows `anna.vinohrady…` instead of `0x…`)
-- `cargo-bikes.vinohrady.prague.obec.eth` — single project subname spanning the full lifecycle: proposal funded ($8,400 from 14 members), executor = `karel`. All five records populated:
-  - `addr(node)` → pool
-  - `addr(node, 2147568180)` → same, ENSIP-11
-  - `text("status")` → `active` (flips through `proposing` → `active` → `completed`, or `expired` on a missed threshold)
-  - `text("maintainer")` → `karel.vinohrady…` (frontend resolves to ENS)
-  - `text("attestations")` → 8 attesters (frontend resolves each)
-  - `contenthash(node)` → placeholder CID (v2 pins real usage docs)
-
-Pool state: milestone 0 (30%) and milestone 1 (50%) released to executor; milestone 2 (20%) claimable after warranty.
+- `obec.eth` → `text("cities") = "prague"` (federation discovery — read by the home page footer)
+- `vinohrady.prague.obec.eth` — Prague neighborhood, admin set on creation
+- Member subnames — every wallet that joins via the dApp gets an **ENSIP-19 reverse name** registered automatically (Basescan shows `<label>.vinohrady.prague.obec.eth` instead of `0x…`)
+- `proposal-cargo-bikes.vinohrady.prague.obec.eth` — proposal subname auto-registered when the proposer calls `pool.createProposal`
+- `cargo-bikes.vinohrady.prague.obec.eth` — resource subname auto-created **atomically with milestone 0** when the threshold is hit. All five records resolve simultaneously:
+  - `addr(node)` → pool address
+  - `addr(node, 2147568180)` → same, ENSIP-11 multichain
+  - `text("funded-by")` → `proposal-cargo-bikes`
+  - `text("maintainer")` → executor address (frontend resolves to ENS)
+  - `text("attestations")` → comma-separated attester addresses
+  - `contenthash(node)` → IPFS CID slot (v2 pins real usage docs)
 
 ---
 
