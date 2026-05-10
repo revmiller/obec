@@ -225,12 +225,9 @@ function FeedHeadline({ item }: { item: FeedItem }) {
         </>
       );
     case "registered": {
-      const type = a.resourceType as string;
       return (
         <>
-          <span style={{ color: "var(--ink-3)", fontStyle: "italic" }}>
-            {type === "proposal" ? "proposed" : "registered"}{" "}
-          </span>
+          <span style={{ color: "var(--ink-3)", fontStyle: "italic" }}>opened&nbsp;</span>
           <em style={{ fontStyle: "italic" }}>{(a.label as string) ?? "—"}</em>
         </>
       );
@@ -269,11 +266,7 @@ function FeedBody({ item }: { item: FeedItem }) {
     case "joined":
       return <>Issued subname under the neighborhood. Welcome to the wire.</>;
     case "registered":
-      return (a.resourceType as string) === "proposal" ? (
-        <>Pool open for commitments. Threshold-and-refund kicks in if it doesn&apos;t fund by deadline.</>
-      ) : (
-        <>Funded resource registered. Records resolvable via ENS.</>
-      );
+      return <>Pool open for commitments. Threshold-and-refund kicks in if it doesn&apos;t fund by deadline.</>;
     case "committed":
       return (
         <>

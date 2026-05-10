@@ -69,9 +69,8 @@ export function useNeighborhoodAggregates(neighborhoodId: `0x${string}` | undefi
     resourceTuples.forEach((res, i) => {
       const tuple = res.result as readonly unknown[] | undefined;
       if (!tuple) return;
-      const type = tuple[2] as string;
       const active = tuple[4] as boolean;
-      if (active && type === "proposal") out.push(nodes[i]);
+      if (active) out.push(nodes[i]);
     });
     return out;
   }, [resourceTuples, nodes]);

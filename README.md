@@ -54,13 +54,13 @@ Each row links to the official spec and the exact implementation in this repo.
 
 ## Deployed contracts
 
-All four contracts deployed and **source-verified** on the official block explorers.
+All four contracts deployed and **source-verified** on the official block explorers. Base Sepolia trio redeployed at block 41316923 for the unified-subname ABI; Sepolia resolver unchanged.
 
 | Contract | Chain | Address | Verified |
 |---|---|---|---|
-| [`ObecRegistry`](packages/foundry/contracts/ObecRegistry.sol) | Base Sepolia (84532) | `0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD` | [Basescan ✓](https://sepolia.basescan.org/address/0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD#code) |
-| [`CommitmentPool`](packages/foundry/contracts/CommitmentPool.sol) | Base Sepolia (84532) | `0x054DBdDed5eB83E602909AafCb1d41d83d83D09b` | [Basescan ✓](https://sepolia.basescan.org/address/0x054DBdDed5eB83E602909AafCb1d41d83d83D09b#code) |
-| [`MockUSDC`](packages/foundry/contracts/MockUSDC.sol) | Base Sepolia (84532) | `0x60e311214A3cB883032A270EC7dC2f42905cbD1F` | [Basescan ✓](https://sepolia.basescan.org/address/0x60e311214A3cB883032A270EC7dC2f42905cbD1F#code) |
+| [`ObecRegistry`](packages/foundry/contracts/ObecRegistry.sol) | Base Sepolia (84532) | `0xbA94E169259A8Ce41756De7Cc0800DD5faaD5b72` | [Basescan ✓](https://sepolia.basescan.org/address/0xbA94E169259A8Ce41756De7Cc0800DD5faaD5b72#code) |
+| [`CommitmentPool`](packages/foundry/contracts/CommitmentPool.sol) | Base Sepolia (84532) | `0x4983155e14018f2BE6B8B41A34FAdf0Cb1ffeFaf` | [Basescan ✓](https://sepolia.basescan.org/address/0x4983155e14018f2BE6B8B41A34FAdf0Cb1ffeFaf#code) |
+| [`MockUSDC`](packages/foundry/contracts/MockUSDC.sol) | Base Sepolia (84532) | `0x174AE58CD543d852Dff72bb971A3B874b56E1832` | [Basescan ✓](https://sepolia.basescan.org/address/0x174AE58CD543d852Dff72bb971A3B874b56E1832#code) |
 | [`ObecResolver`](packages/foundry/contracts/ObecResolver.sol) | Sepolia (11155111) | `0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD` | [Etherscan ✓](https://sepolia.etherscan.io/address/0xedA49dB1213e783EF25DE41f9B4E82711F8D7bbD#code) |
 
 ENS Sepolia Registry at `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` has `setResolver(namehash("obec.eth"), 0xedA49…7bbD)`. Verify yourself:

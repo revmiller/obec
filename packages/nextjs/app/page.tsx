@@ -88,13 +88,20 @@ const Home: NextPage = () => {
   }
   const totalMembers = joinedEvents?.length ?? 0;
   const firstCity = Array.from(liveCitySet)[0];
+  const fallbackCity = (() => {
+    if (typeof federatedCities === "string" && federatedCities.trim()) {
+      return federatedCities.split(",")[0].trim().toLowerCase();
+    }
+    return "prague";
+  })();
+  const ctaCity = firstCity ?? fallbackCity;
 
-  // Multicall every proposal-typed resource to derive pooled USDC + active count
-  // straight from contract state, not just event log presence.
+  // Multicall every project resource to derive pooled USDC + active count
+  // straight from contract state. Post-unification every registered resource
+  // is a project pool, so no type filter needed.
   const proposalNodes: Hex[] =
     registeredEvents
-      ?.filter(e => (e.args as { resourceType?: string } | undefined)?.resourceType === "proposal")
-      .map(e => (e.args as { resourceNode?: Hex } | undefined)?.resourceNode)
+      ?.map(e => (e.args as { resourceNode?: Hex } | undefined)?.resourceNode)
       .filter((n): n is Hex => !!n) ?? [];
 
   const { data: pool } = useDeployedContractInfo({
@@ -159,8 +166,8 @@ const Home: NextPage = () => {
           </p>
 
           <div className="mt-10 lg:mt-14 flex gap-4 items-center flex-wrap">
-            <LinkButton href={firstCity ? `/${firstCity}` : "/"} size="lg" arrow>
-              {firstCity ? "Browse neighborhoods" : "Open the first city"}
+            <LinkButton href={`/${ctaCity}`} size="lg" arrow>
+              {firstCity ? "Browse neighborhoods" : `Open ${ctaCity}`}
             </LinkButton>
           </div>
 

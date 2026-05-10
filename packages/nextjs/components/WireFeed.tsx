@@ -192,18 +192,17 @@ function WireLine({ event, city, neighborhood }: { event: WireEvent; city: strin
     }
     case "registered": {
       const label = a.label as string;
-      const type = a.resourceType as string;
-      const href = type === "proposal" ? `/${city}/${neighborhood}/p/${label}` : undefined;
+      const type = a.resourceType as string | undefined;
       return (
         <>
-          <span style={{ color: "var(--ink-3)" }}>{type === "proposal" ? "proposed" : "resource live"}</span>{" "}
-          {href ? (
-            <Link href={href} style={{ color: "var(--ink)", textDecoration: "underline" }}>
-              {label}
-            </Link>
-          ) : (
-            <strong>{label}</strong>
-          )}
+          <span style={{ color: "var(--ink-3)" }}>opened</span>{" "}
+          <Link
+            href={`/${city}/${neighborhood}/p/${label}`}
+            style={{ color: "var(--ink)", textDecoration: "underline" }}
+          >
+            {label}
+          </Link>
+          {type ? <span style={{ color: "var(--ink-4)" }}> · {type}</span> : null}
         </>
       );
     }
