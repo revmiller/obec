@@ -33,7 +33,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
     args: [neighborhoodId],
   });
 
-  const { data: resourceNodes } = useScaffoldReadContract({
+  const { data: projectNodes } = useScaffoldReadContract({
     contractName: "ObecRegistry",
     functionName: "getNeighborhoodResources",
     args: [neighborhoodId],
@@ -42,7 +42,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
   const exists = hood && Array.isArray(hood) && hood[3] === true;
   const admin = exists ? (hood[2] as `0x${string}`) : undefined;
   const memberCount = Array.isArray(memberNodes) ? memberNodes.length : 0;
-  const resourceCount = Array.isArray(resourceNodes) ? resourceNodes.length : 0;
+  const projectCount = Array.isArray(projectNodes) ? projectNodes.length : 0;
 
   return (
     <div className="flex flex-col grow">
@@ -128,7 +128,7 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
           >
             {[
               { n: String(memberCount), l: "members", sub: "subnames issued" },
-              { n: String(resourceCount), l: "pools", sub: "across this neighborhood" },
+              { n: String(projectCount), l: "pools", sub: "across this neighborhood" },
               { n: "—", l: "pooled", sub: "across treasury & milestones" },
               { n: "—", l: "active drives", sub: "fundraising right now" },
             ].map((s, i, arr) => (
@@ -159,19 +159,19 @@ export default function NeighborhoodPage({ params }: { params: Promise<Params> }
               num="03"
               right={
                 <span className="micro">
-                  {resourceCount} {resourceCount === 1 ? "pool" : "pools"}
+                  {projectCount} {projectCount === 1 ? "pool" : "pools"}
                 </span>
               }
             >
               The commons
             </SectionHead>
             <div className="mt-9">
-              {!resourceNodes || resourceCount === 0 ? (
+              {!projectNodes || projectCount === 0 ? (
                 <p className="mt-6" style={{ color: "var(--ink-3)", fontSize: 14 }}>
                   No proposals yet.
                 </p>
               ) : (
-                resourceNodes.map((node, i) => (
+                projectNodes.map((node, i) => (
                   <ResourceRow
                     key={node}
                     node={node as `0x${string}`}
