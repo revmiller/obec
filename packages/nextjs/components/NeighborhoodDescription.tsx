@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import { NetworkGuard } from "~~/components/NetworkGuard";
 import { Button } from "~~/components/obec";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
 type Props = {
   neighborhoodId: `0x${string}`;
@@ -98,33 +100,35 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
   }
 
   return (
-    <div className="mt-3" style={{ maxWidth: 620 }}>
-      <textarea
-        value={draft}
-        onChange={e => setDraft(e.target.value)}
-        rows={3}
-        placeholder="What does this neighborhood do?"
-        style={{
-          width: "100%",
-          padding: 10,
-          border: "1px solid var(--hair)",
-          borderRadius: 4,
-          background: "var(--paper)",
-          color: "var(--ink)",
-          fontFamily: "var(--sans)",
-          fontSize: 14,
-          outline: "none",
-          resize: "vertical",
-        }}
-      />
-      <div className="flex gap-2 mt-2">
-        <Button size="sm" disabled={isPending} onClick={onSave}>
-          {isPending ? "Saving…" : "Save"}
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-          Cancel
-        </Button>
+    <NetworkGuard targetChainId={STATE_CHAIN_ID}>
+      <div className="mt-3" style={{ maxWidth: 620 }}>
+        <textarea
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          rows={3}
+          placeholder="What does this neighborhood do?"
+          style={{
+            width: "100%",
+            padding: 10,
+            border: "1px solid var(--hair)",
+            borderRadius: 4,
+            background: "var(--paper)",
+            color: "var(--ink)",
+            fontFamily: "var(--sans)",
+            fontSize: 14,
+            outline: "none",
+            resize: "vertical",
+          }}
+        />
+        <div className="flex gap-2 mt-2">
+          <Button size="sm" disabled={isPending} onClick={onSave}>
+            {isPending ? "Saving…" : "Save"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        </div>
       </div>
-    </div>
+    </NetworkGuard>
   );
 }
