@@ -277,4 +277,10 @@ contract ObecRegistry {
         Member memory m = members[node];
         return m.active && m.neighborhoodId == neighborhoodId;
     }
+
+    /// @notice Returns the admin of a neighborhood (zero if unknown / inactive).
+    function neighborhoodAdmin(bytes32 neighborhoodId) external view returns (address) {
+        Neighborhood memory n = neighborhoods[neighborhoodId];
+        return n.active ? n.admin : address(0);
+    }
 }

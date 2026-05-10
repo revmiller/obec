@@ -310,6 +310,25 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "neighborhoodAdmin",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "neighborhoodMembers",
           inputs: [
             {
@@ -1461,6 +1480,24 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "resolveDispute",
+          inputs: [
+            {
+              name: "proposalNode",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "refund",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "status",
           inputs: [
             {
@@ -1556,6 +1593,25 @@ const deployedContracts = {
               type: "uint256",
               indexed: false,
               internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "DisputeResolved",
+          inputs: [
+            {
+              name: "proposalNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "refunded",
+              type: "bool",
+              indexed: false,
+              internalType: "bool",
             },
           ],
           anonymous: false,
@@ -1740,6 +1796,11 @@ const deployedContracts = {
         {
           type: "error",
           name: "NotActive",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NotAdmin",
           inputs: [],
         },
         {
@@ -2098,6 +2159,25 @@ const deployedContracts = {
               name: "active",
               type: "bool",
               internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "neighborhoodAdmin",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -3255,6 +3335,24 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "resolveDispute",
+          inputs: [
+            {
+              name: "proposalNode",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "refund",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "status",
           inputs: [
             {
@@ -3350,6 +3448,25 @@ const deployedContracts = {
               type: "uint256",
               indexed: false,
               internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "DisputeResolved",
+          inputs: [
+            {
+              name: "proposalNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "refunded",
+              type: "bool",
+              indexed: false,
+              internalType: "bool",
             },
           ],
           anonymous: false,
@@ -3534,6 +3651,11 @@ const deployedContracts = {
         {
           type: "error",
           name: "NotActive",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NotAdmin",
           inputs: [],
         },
         {

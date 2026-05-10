@@ -9,6 +9,7 @@ import { NameCoder } from "@ensdomains/ens-contracts/utils/NameCoder.sol";
 
 interface IRegistry {
     function isMember(bytes32 neighborhoodId, address wallet) external view returns (bool);
+    function neighborhoodAdmin(bytes32 neighborhoodId) external view returns (address);
     function registerResource(
         bytes32 neighborhoodId,
         string calldata label,
@@ -70,6 +71,7 @@ contract CommitmentPool is ReentrancyGuard {
     event Refunded(bytes32 indexed proposalNode, address indexed member, uint256 amount);
     event Expired(bytes32 indexed proposalNode);
     event Disputed(bytes32 indexed proposalNode, address indexed raiser);
+    event DisputeResolved(bytes32 indexed proposalNode, bool refunded);
 
     error NotMember();
     error NotActive();
@@ -80,6 +82,7 @@ contract CommitmentPool is ReentrancyGuard {
     error MilestoneNotReady();
     error AmountZero();
     error WrongStatus();
+    error NotAdmin();
 
     constructor(address _registry, address _usdc) {
         registry = IRegistry(_registry);
@@ -188,11 +191,20 @@ contract CommitmentPool is ReentrancyGuard {
     function claimRefund(bytes32 proposalNode) external nonReentrant {
         Proposal storage pr = _proposals[proposalNode];
         if (pr.status != Status.Expired) revert NotExpired();
-        uint256 amount = commitments[proposalNode][msg.sender];
-        if (amount == 0) revert AmountZero();
+        uint256 commitment = commitments[proposalNode][msg.sender];
+        if (commitment == 0) revert AmountZero();
+
+        // Pro-rate by the unreleased fraction so the same path serves both natural pre-funding
+        // expiry (no milestones released → full refund) and admin-resolved dispute refunds
+        // (some milestones already paid the executor → committers split what's left).
+        uint16 unreleasedBps = 10_000;
+        if (pr.milestoneReleased[0]) unreleasedBps -= MILESTONE_0_BPS;
+        if (pr.milestoneReleased[1]) unreleasedBps -= MILESTONE_1_BPS;
+        if (pr.milestoneReleased[2]) unreleasedBps -= MILESTONE_2_BPS;
+        uint256 amount = (commitment * unreleasedBps) / 10_000;
 
         commitments[proposalNode][msg.sender] = 0;
-        usdc.safeTransfer(msg.sender, amount);
+        if (amount > 0) usdc.safeTransfer(msg.sender, amount);
         emit Refunded(proposalNode, msg.sender, amount);
     }
 
@@ -254,6 +266,27 @@ contract CommitmentPool is ReentrancyGuard {
         registry.setText(proposalNode, "status", "disputed");
 
         emit Disputed(proposalNode, msg.sender);
+    }
+
+    /// @notice Neighborhood admin resolves a dispute. `refund=true` flips the proposal to
+    ///         Expired so committers can claim their unreleased principal back; `refund=false`
+    ///         resumes execution. Without this path a single committer's `raiseDispute` would
+    ///         freeze pool funds permanently.
+    function resolveDispute(bytes32 proposalNode, bool refund) external {
+        Proposal storage pr = _proposals[proposalNode];
+        if (pr.status != Status.Disputed) revert WrongStatus();
+        if (msg.sender != registry.neighborhoodAdmin(pr.neighborhoodId)) revert NotAdmin();
+
+        if (refund) {
+            pr.status = Status.Expired;
+            registry.setText(proposalNode, "status", "expired");
+            registry.deactivateResource(proposalNode);
+        } else {
+            pr.status = Status.Executing;
+            registry.setText(proposalNode, "status", "active");
+        }
+
+        emit DisputeResolved(proposalNode, refund);
     }
 
     // -------------- internal --------------
