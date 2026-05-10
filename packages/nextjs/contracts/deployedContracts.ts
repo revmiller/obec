@@ -1093,7 +1093,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3,
+      deployedOnBlock: 2,
     },
     CommitmentPool: {
       address: "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
@@ -1785,6 +1785,11 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "InvalidParams",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "MilestoneAlreadyReleased",
           inputs: [],
         },
@@ -1857,7 +1862,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 2,
+      deployedOnBlock: 3,
     },
   },
   84532: {
@@ -3636,6 +3641,11 @@ const deployedContracts = {
         {
           type: "error",
           name: "AmountZero",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "InvalidParams",
           inputs: [],
         },
         {

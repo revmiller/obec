@@ -83,6 +83,7 @@ contract CommitmentPool is ReentrancyGuard {
     error AmountZero();
     error WrongStatus();
     error NotAdmin();
+    error InvalidParams();
 
     constructor(address _registry, address _usdc) {
         registry = IRegistry(_registry);
@@ -121,6 +122,11 @@ contract CommitmentPool is ReentrancyGuard {
     function createProposal(CreateParams calldata p) external returns (bytes32 proposalNode) {
         if (!registry.isMember(p.neighborhoodId, msg.sender)) revert NotMember();
         if (p.deadline <= block.timestamp) revert PastDeadline();
+        if (p.executor == address(0)) revert InvalidParams();
+        if (p.targetAmount == 0) revert InvalidParams();
+        if (p.minMembers == 0) revert InvalidParams();
+        if (p.attestationThreshold == 0) revert InvalidParams();
+        if (bytes(p.label).length == 0) revert InvalidParams();
 
         proposalNode = NameCoder.namehash(p.neighborhoodId, keccak256(bytes(p.label)));
         if (_proposals[proposalNode].status != Status.None) revert WrongStatus();

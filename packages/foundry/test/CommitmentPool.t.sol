@@ -66,6 +66,30 @@ contract CommitmentPoolTest is Test {
         pool.createProposal(_baseParams());
     }
 
+    function test_createProposal_zeroExecutorReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.executor = address(0);
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
+    function test_createProposal_zeroTargetReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.targetAmount = 0;
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
+    function test_createProposal_emptyLabelReverts() public {
+        CommitmentPool.CreateParams memory p = _baseParams();
+        p.label = "";
+        vm.prank(members[0]);
+        vm.expectRevert(CommitmentPool.InvalidParams.selector);
+        pool.createProposal(p);
+    }
+
     function test_createProposal_pastDeadlineReverts() public {
         CommitmentPool.CreateParams memory p = _baseParams();
         p.deadline = uint64(block.timestamp); // not strictly future
