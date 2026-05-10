@@ -6,18 +6,19 @@ import { formatUnits } from "viem";
 import { namehash } from "viem/ens";
 import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
-import { ENSName } from "~~/components/ENSName";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
 import { MyCommitment } from "~~/components/MyCommitment";
 import { ResolvedViaENS } from "~~/components/ResolvedViaENS";
 import { ResourceCard } from "~~/components/ResourceCard";
 import { ShareButton } from "~~/components/ShareButton";
+import { ENSName, NamehashChip, Pill, SectionHead } from "~~/components/obec";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 const USDC_DECIMALS = 6;
 
 const STATUS_LABEL = ["None", "Active", "Executing", "Completed", "Expired", "Disputed"] as const;
+type StatusKey = (typeof STATUS_LABEL)[number];
 
 type Params = { city: string; neighborhood: string; proposal: string };
 
@@ -43,9 +44,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
   const loading = pr === undefined;
   const status = Number(pr?.status ?? 0);
   const exists = !loading && status !== 0;
+  const statusKey: StatusKey = (STATUS_LABEL[status] as StatusKey) ?? "None";
 
   const target = pr?.targetAmount ?? 0n;
   const committed = pr?.totalCommitted ?? 0n;
+  const targetUsd = Number(formatUnits(target, USDC_DECIMALS));
+  const committedUsd = Number(formatUnits(committed, USDC_DECIMALS));
   const progress = target > 0n ? Number((committed * 100n) / target) : 0;
 
   const memberCount = Number(pr?.memberCount ?? 0n);
@@ -57,158 +61,291 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
   const secsUntilDeadline = deadlineSec - nowSec;
   const deadlineLabel = formatDeadline(secsUntilDeadline);
 
+  const isFundraising = status === 1;
+  const isExecuting = status === 2;
+  const hasResource = pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}`;
+
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="text-sm opacity-60">
-        <Link href="/" className="hover:underline">
-          home
-        </Link>{" "}
-        /{" "}
-        <Link href={`/${city}`} className="hover:underline capitalize">
-          {city}
-        </Link>{" "}
-        /{" "}
-        <Link href={`/${city}/${neighborhood}`} className="hover:underline capitalize">
-          {neighborhood}
-        </Link>
+    <div className="flex flex-col grow">
+      {/* Breadcrumb */}
+      <div className="px-6 sm:px-12 lg:px-14 pt-8">
+        <div className="ens flex items-center gap-2 flex-wrap" style={{ fontSize: 12 }}>
+          <Link href="/" style={{ color: "var(--ink-3)", textDecoration: "none" }}>
+            home
+          </Link>
+          <span className="ens-dot">/</span>
+          <Link href={`/${city}/${neighborhood}`} style={{ color: "var(--ink-3)", textDecoration: "none" }}>
+            {neighborhood}
+          </Link>
+          <span className="ens-dot">/</span>
+          <span className="ens-self">{proposal}</span>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mt-2">
-        <div className="min-w-0">
-          <h1 className="text-3xl font-bold capitalize">{proposal.replace(/-/g, " ")}</h1>
-          <p className="font-mono text-xs sm:text-sm opacity-70 mt-1 break-all">{fullName}</p>
+      {/* Masthead */}
+      <section className="px-6 sm:px-12 lg:px-14 pt-10 pb-10">
+        <div className="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="micro mb-3" style={{ fontSize: 11 }}>
+              {isFundraising ? "Open proposal" : exists ? STATUS_LABEL[status] : "—"}
+            </div>
+            <h1
+              className="serif"
+              style={{
+                fontSize: "clamp(48px, 8vw, 88px)",
+                fontWeight: 400,
+                letterSpacing: "-0.035em",
+                lineHeight: 0.95,
+                margin: 0,
+                textTransform: "lowercase",
+              }}
+            >
+              {proposal.replace(/-/g, " ")}
+            </h1>
+            <div className="mt-4 flex items-baseline gap-3 flex-wrap">
+              <span className="ens" style={{ fontSize: 12 }}>
+                <span className="ens-self">{proposal}</span>
+                <span className="ens-parent">
+                  .{neighborhood}.{city}
+                </span>
+                <span className="ens-dot">.</span>
+                {PROTOCOL_ROOT.split(".").map((part, i, arr) => (
+                  <span key={i}>
+                    <span className={i === arr.length - 1 ? "ens-tld" : "ens-parent"}>{part}</span>
+                    {i < arr.length - 1 && <span className="ens-dot">.</span>}
+                  </span>
+                ))}
+              </span>
+              <span style={{ width: 1, height: 12, background: "var(--hair)" }} />
+              <NamehashChip name={fullName} />
+            </div>
+          </div>
+          {exists && <ShareButton label="Share" />}
         </div>
+
         {exists && (
-          <div className="shrink-0">
-            <ShareButton label="Share with neighbors" />
+          <div className="mt-6">
+            {statusKey === "Active" && (
+              <Pill tone="terracotta" dot>
+                fundraising · {deadlineLabel}
+              </Pill>
+            )}
+            {statusKey === "Executing" && (
+              <Pill tone="moss" dot>
+                executing
+              </Pill>
+            )}
+            {statusKey === "Completed" && (
+              <Pill tone="moss" dot>
+                completed
+              </Pill>
+            )}
+            {statusKey === "Expired" && <Pill>expired</Pill>}
+            {statusKey === "Disputed" && (
+              <Pill tone="terracotta" dot>
+                disputed
+              </Pill>
+            )}
           </div>
         )}
-      </div>
+      </section>
 
       {loading ? (
-        <div className="mt-10 opacity-50 text-sm">Loading…</div>
-      ) : !exists ? (
-        <div className="mt-10 p-6 bg-base-200 rounded-xl">
-          <p className="text-lg">This proposal doesn&apos;t exist yet.</p>
-          <p className="text-sm opacity-70 mt-2">A neighborhood member can create it from the neighborhood page.</p>
+        <div className="px-6 sm:px-12 lg:px-14 pb-16" style={{ color: "var(--ink-3)", fontSize: 14 }}>
+          Loading…
         </div>
+      ) : !exists ? (
+        <section
+          className="mx-6 sm:mx-12 lg:mx-14 mb-20 p-8 max-w-2xl"
+          style={{ border: "1px solid var(--hair)", borderRadius: 4 }}
+        >
+          <p style={{ fontSize: 17, color: "var(--ink-2)", margin: 0 }}>This proposal doesn&apos;t exist yet.</p>
+          <p style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 8, marginBottom: 0 }}>
+            A neighborhood member can create it from the neighborhood page.
+          </p>
+        </section>
       ) : (
         <>
-          <div className="mt-4 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-base-300">
-            {STATUS_LABEL[status] ?? "Unknown"}
-          </div>
+          {/* Two-column: narrative + commit */}
+          <section className="px-6 sm:px-12 lg:px-14 pb-16 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10 lg:gap-16 items-start">
+            <div>
+              {description && (
+                <p
+                  className="serif"
+                  style={{
+                    fontSize: 19,
+                    color: "var(--ink-2)",
+                    lineHeight: 1.55,
+                    letterSpacing: "-0.005em",
+                    maxWidth: 620,
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {description}
+                </p>
+              )}
 
-          {description && <p className="mt-4 text-base opacity-90 max-w-2xl whitespace-pre-wrap">{description}</p>}
-
-          <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-base-200 rounded-xl p-5">
-              <div className="text-sm opacity-70">Pool target</div>
-              <div className="text-3xl font-semibold mt-1">${formatUnits(target, USDC_DECIMALS)}</div>
-              <div className="text-xs opacity-60 mt-0.5">{formatUnits(target, USDC_DECIMALS)} USDC</div>
-
-              <div className="mt-5 flex items-baseline justify-between">
-                <div className="text-2xl font-semibold">${formatUnits(committed, USDC_DECIMALS)}</div>
-                <div className="text-sm opacity-70">{progress}% committed</div>
-              </div>
-              <div className="mt-2 w-full h-3 rounded-full bg-base-300 overflow-hidden">
-                <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
-              </div>
-
-              <div className="mt-4 text-sm">
-                {membersNeeded > 0 ? (
-                  <>
-                    <span className="font-semibold">{membersNeeded} more</span> neighbor{membersNeeded === 1 ? "" : "s"}{" "}
-                    needed
-                    <span className="opacity-60">
-                      {" "}
-                      ({memberCount} of {minMembers} joined)
+              {/* Stats grid */}
+              <div className="mt-10 grid grid-cols-2 gap-y-6 gap-x-10" style={{ maxWidth: 620 }}>
+                <Stat label="Pool target">
+                  <span className="serif num" style={{ fontSize: 28, fontWeight: 400 }}>
+                    ${targetUsd.toLocaleString()}
+                  </span>
+                </Stat>
+                <Stat label={isFundraising ? `${progress}% committed` : "Committed"}>
+                  <span className="serif num" style={{ fontSize: 28, fontWeight: 400 }}>
+                    ${committedUsd.toLocaleString()}
+                  </span>
+                </Stat>
+                <Stat label="Members">
+                  <span className="serif num" style={{ fontSize: 28, fontWeight: 400 }}>
+                    {memberCount} <span style={{ color: "var(--ink-3)", fontSize: 16 }}>/ {minMembers}</span>
+                  </span>
+                  {membersNeeded > 0 && (
+                    <span style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4, display: "block" }}>
+                      {membersNeeded} more to minimum
                     </span>
-                  </>
-                ) : (
-                  <span className="opacity-70">{memberCount} neighbors committed (minimum reached)</span>
-                )}
+                  )}
+                </Stat>
+                <Stat label="Deadline">
+                  <span className="serif num" style={{ fontSize: 28, fontWeight: 400 }}>
+                    {deadlineLabel}
+                  </span>
+                  <span style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 4, display: "block" }}>
+                    {pr ? new Date(deadlineSec * 1000).toLocaleString() : "—"}
+                  </span>
+                </Stat>
+                <Stat label="Executor">
+                  <ENSName address={pr?.executor as `0x${string}` | undefined} size="md" />
+                </Stat>
+                <Stat label="Warranty">
+                  <span style={{ fontSize: 14 }}>
+                    {pr?.warrantyDuration ? `${pr.warrantyDuration.toString()} seconds` : "—"}
+                  </span>
+                </Stat>
               </div>
+
+              {/* Milestones */}
+              <div className="mt-14">
+                <SectionHead num="01">Milestones</SectionHead>
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Milestone
+                    label="On threshold"
+                    pct={30}
+                    released={pr?.milestoneReleased?.[0] ?? false}
+                    note="Released the moment threshold tips."
+                  />
+                  <Milestone
+                    label="On attestations"
+                    pct={50}
+                    released={pr?.milestoneReleased?.[1] ?? false}
+                    note="Released after attestation quorum."
+                  />
+                  <Milestone
+                    label="Post-warranty"
+                    pct={20}
+                    released={pr?.milestoneReleased?.[2] ?? false}
+                    note="Released after warranty window."
+                  />
+                </div>
+              </div>
+
+              {pr && (
+                <div className="mt-12">
+                  <MyCommitment proposalNode={proposalNode} status={status} deadline={pr.deadline} />
+                </div>
+              )}
+
+              {isExecuting && pr && (
+                <div className="mt-12">
+                  <AttestButton
+                    proposalNode={proposalNode}
+                    attestationCount={pr.attestationCount}
+                    attestationThreshold={pr.attestationThreshold}
+                  />
+                </div>
+              )}
+
+              {hasResource && (
+                <div className="mt-12">
+                  <SectionHead num="02">Resource</SectionHead>
+                  <div className="mt-6">
+                    <ResourceCard resourceNode={pr!.resourceNode as `0x${string}`} />
+                  </div>
+                </div>
+              )}
+
+              {hasResource && pr?.resourceLabel && (
+                <div className="mt-6">
+                  <ResolvedViaENS name={`${pr.resourceLabel}.${neighborhood}.${city}.${PROTOCOL_ROOT}`} />
+                </div>
+              )}
+
+              {pr && (status === 2 || status === 3) && (
+                <div className="mt-12">
+                  <ExecutorPanel
+                    proposalNode={proposalNode}
+                    executor={pr.executor as `0x${string}`}
+                    milestoneReleased={pr.milestoneReleased}
+                    attestedAt={pr.attestedAt}
+                    warrantyDuration={pr.warrantyDuration}
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="bg-base-200 rounded-xl p-5">
-              <div className="text-sm opacity-70">Deadline</div>
-              <div className={`text-2xl font-semibold mt-1 ${secsUntilDeadline < 0 ? "text-error" : ""}`}>
-                {deadlineLabel}
-              </div>
-              <div className="text-xs opacity-60 mt-0.5">
-                {pr ? new Date(deadlineSec * 1000).toLocaleString() : "—"}
-              </div>
-              <div className="text-xs opacity-70 mt-3">
-                {secsUntilDeadline > 0
-                  ? "If the target isn't reached by then, every commitment is automatically refunded."
-                  : "Deadline passed."}
-              </div>
-
-              <div className="mt-5 text-sm opacity-70">Executor</div>
-              <div className="mt-1">
-                <ENSName address={pr?.executor} />
-              </div>
-              <div className="mt-3 text-sm opacity-70">Warranty after release</div>
-              <div className="text-sm">{pr ? `${pr.warrantyDuration?.toString()} seconds` : "—"}</div>
-            </div>
+            {/* Sticky commit panel */}
+            {pool?.address && isFundraising && (
+              <aside className="lg:sticky lg:top-8">
+                <CommitForm
+                  proposalNode={proposalNode}
+                  poolAddress={pool.address}
+                  target={target}
+                  committed={committed}
+                />
+              </aside>
+            )}
           </section>
-
-          <section className="mt-8 bg-base-200 rounded-xl p-5">
-            <h2 className="text-lg font-semibold mb-2">Milestones</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-              <Milestone label="On threshold (30%)" released={pr?.milestoneReleased?.[0] ?? false} />
-              <Milestone label="On attestations (50%)" released={pr?.milestoneReleased?.[1] ?? false} />
-              <Milestone label="Post-warranty (20%)" released={pr?.milestoneReleased?.[2] ?? false} />
-            </div>
-          </section>
-
-          {pool?.address && status === 1 /* Active */ && (
-            <section className="mt-8">
-              <CommitForm proposalNode={proposalNode} poolAddress={pool.address} />
-            </section>
-          )}
-
-          {pr && (
-            <section className="mt-8">
-              <MyCommitment proposalNode={proposalNode} status={status} deadline={pr.deadline} />
-            </section>
-          )}
-
-          {status === 2 /* Executing */ && pr && (
-            <section className="mt-8">
-              <AttestButton
-                proposalNode={proposalNode}
-                attestationCount={pr.attestationCount}
-                attestationThreshold={pr.attestationThreshold}
-              />
-            </section>
-          )}
-
-          {pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}` && (
-            <section className="mt-8">
-              <ResourceCard resourceNode={pr.resourceNode as `0x${string}`} />
-            </section>
-          )}
-
-          {pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}` && pr.resourceLabel && (
-            <section className="mt-6">
-              <ResolvedViaENS name={`${pr.resourceLabel}.${neighborhood}.${city}.${PROTOCOL_ROOT}`} />
-            </section>
-          )}
-
-          {pr && (status === 2 || status === 3) && (
-            <section className="mt-8">
-              <ExecutorPanel
-                proposalNode={proposalNode}
-                executor={pr.executor as `0x${string}`}
-                milestoneReleased={pr.milestoneReleased}
-                attestedAt={pr.attestedAt}
-                warrantyDuration={pr.warrantyDuration}
-              />
-            </section>
-          )}
         </>
       )}
+    </div>
+  );
+}
+
+function Stat({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="micro" style={{ fontSize: 11, marginBottom: 6 }}>
+        {label}
+      </div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function Milestone({ label, pct, released, note }: { label: string; pct: number; released: boolean; note: string }) {
+  return (
+    <div
+      style={{
+        padding: 18,
+        border: "1px solid var(--hair)",
+        borderRadius: 4,
+        background: released ? "var(--paper-2)" : "var(--paper)",
+      }}
+    >
+      <div className="flex items-baseline justify-between">
+        <span className="micro" style={{ fontSize: 11 }}>
+          {released ? "released" : "pending"}
+        </span>
+        <span className="num-tag" style={{ fontSize: 11 }}>
+          {pct}%
+        </span>
+      </div>
+      <div className="serif mt-2" style={{ fontSize: 18, fontWeight: 400, letterSpacing: "-0.015em" }}>
+        {label}
+      </div>
+      <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 6, marginBottom: 0, lineHeight: 1.45 }}>{note}</p>
     </div>
   );
 }
@@ -222,13 +359,4 @@ function formatDeadline(secs: number): string {
   const minutes = Math.floor(secs / 60);
   if (minutes >= 1) return `${minutes} minutes`;
   return `${secs} seconds`;
-}
-
-function Milestone({ label, released }: { label: string; released: boolean }) {
-  return (
-    <div className={`p-3 rounded-lg border ${released ? "border-primary bg-primary/10" : "border-base-300"}`}>
-      <div className="text-xs opacity-70">{released ? "RELEASED" : "PENDING"}</div>
-      <div className="mt-1">{label}</div>
-    </div>
-  );
 }

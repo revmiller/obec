@@ -3,6 +3,7 @@
 import { useAccount } from "wagmi";
 import { ConnectPrompt } from "~~/components/ConnectPrompt";
 import { NetworkGuard } from "~~/components/NetworkGuard";
+import { Button } from "~~/components/obec";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { STATE_CHAIN_ID } from "~~/lib/coin-types";
 
@@ -23,13 +24,13 @@ export function CreateNeighborhoodButton({ city, neighborhood }: { city: string;
   return (
     <div className="mt-4">
       <NetworkGuard targetChainId={STATE_CHAIN_ID}>
-        <button
-          className="btn btn-primary"
+        <Button
           disabled={isPending}
+          arrow
           onClick={() => writeContractAsync({ functionName: "createNeighborhood", args: [city, neighborhood] })}
         >
           {isPending ? "Creating…" : "Create this neighborhood"}
-        </button>
+        </Button>
       </NetworkGuard>
     </div>
   );

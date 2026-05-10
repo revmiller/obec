@@ -87,25 +87,43 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
 
   if (!open) {
     return (
-      <button className="btn btn-outline btn-sm mt-4" onClick={() => setOpen(true)}>
-        Propose a project
+      <button className="obec-btn ghost sm mt-4" onClick={() => setOpen(true)}>
+        Propose a project <span className="arrow">→</span>
       </button>
     );
   }
 
   return (
     <NetworkGuard targetChainId={STATE_CHAIN_ID}>
-      <div className="mt-4 p-5 bg-base-200 rounded-xl space-y-3">
-        <h3 className="font-semibold">New proposal</h3>
+      <div
+        className="mt-4 p-6 space-y-3"
+        style={{ border: "1px solid var(--hair)", borderRadius: 4, background: "var(--paper)" }}
+      >
+        <h3 className="serif" style={{ fontSize: 22, fontWeight: 400, letterSpacing: "-0.02em", margin: 0 }}>
+          New proposal
+        </h3>
         <Field label="Label (becomes the subname)" value={label} onChange={setLabel} mono />
         <Field label="Executor address" value={executor} onChange={setExecutor} mono placeholder="0x…" />
         <label className="block">
-          <span className="text-xs opacity-70">Description (saved as `description` text record)</span>
+          <span className="micro" style={{ fontSize: 11 }}>
+            Description (saved as `description` text record)
+          </span>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={3}
-            className="textarea textarea-bordered textarea-sm w-full mt-1"
+            className="block w-full mt-2"
+            style={{
+              padding: 10,
+              border: "1px solid var(--hair)",
+              borderRadius: 4,
+              background: "var(--paper)",
+              color: "var(--ink)",
+              fontFamily: "var(--sans)",
+              fontSize: 14,
+              outline: "none",
+              resize: "vertical",
+            }}
           />
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -117,10 +135,10 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           <Field label="Resource type" value={resourceType} onChange={setResourceType} />
         </div>
         <div className="flex gap-2">
-          <button className="btn btn-primary btn-sm" disabled={isPending || !executor} onClick={submit}>
-            {isPending ? "Creating…" : "Create proposal"}
+          <button className="obec-btn sm" disabled={isPending || !executor} onClick={submit}>
+            {isPending ? "Creating…" : "Create proposal"} <span className="arrow">→</span>
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
+          <button className="obec-btn ghost sm" onClick={() => setOpen(false)}>
             Cancel
           </button>
         </div>
@@ -144,13 +162,24 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs opacity-70">{label}</span>
+      <span className="micro" style={{ fontSize: 11 }}>
+        {label}
+      </span>
       <input
         type="text"
         value={value}
         placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
-        className={`input input-bordered input-sm w-full mt-1 ${mono ? "font-mono" : ""}`}
+        className={`block w-full mt-2 ${mono ? "mono" : ""}`}
+        style={{
+          padding: "9px 12px",
+          border: "1px solid var(--hair)",
+          borderRadius: 4,
+          background: "var(--paper)",
+          color: "var(--ink)",
+          fontSize: 13,
+          outline: "none",
+        }}
       />
     </label>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import { Button } from "~~/components/obec";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 type Props = {
@@ -9,8 +10,6 @@ type Props = {
   admin: `0x${string}` | undefined;
 };
 
-/// Admin-editable, public-readable description of the neighborhood.
-/// Stored as a `description` text record on the neighborhood's node.
 export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
   const { address } = useAccount();
   const [editing, setEditing] = useState(false);
@@ -27,7 +26,7 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
   });
 
   useEffect(() => {
-    if (description !== undefined) setDraft(description);
+    if (typeof description === "string") setDraft(description);
   }, [description]);
 
   const isAdmin = address && admin && address.toLowerCase() === admin.toLowerCase();
@@ -40,14 +39,37 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
     setEditing(false);
   };
 
-  // Read-only render
   if (!editing) {
-    if (description) {
+    if (typeof description === "string" && description) {
       return (
-        <div className="mt-3 max-w-2xl">
-          <p className="text-base opacity-90 whitespace-pre-wrap">{description}</p>
+        <div className="mt-3" style={{ maxWidth: 620 }}>
+          <p
+            style={{
+              fontSize: 18,
+              color: "var(--ink-2)",
+              lineHeight: 1.45,
+              letterSpacing: "-0.005em",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {description}
+          </p>
           {isAdmin && (
-            <button onClick={() => setEditing(true)} className="text-xs opacity-50 hover:opacity-80 mt-1">
+            <button
+              onClick={() => setEditing(true)}
+              className="mono"
+              style={{
+                fontSize: 11,
+                color: "var(--ink-3)",
+                background: "none",
+                border: "none",
+                padding: 0,
+                marginTop: 8,
+                cursor: "pointer",
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
               edit description
             </button>
           )}
@@ -56,7 +78,18 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
     }
     if (isAdmin) {
       return (
-        <button onClick={() => setEditing(true)} className="mt-3 text-sm opacity-70 hover:opacity-100 hover:underline">
+        <button
+          onClick={() => setEditing(true)}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            marginTop: 12,
+            fontSize: 14,
+            color: "var(--ink-3)",
+            cursor: "pointer",
+          }}
+        >
           + Add a description for your neighborhood
         </button>
       );
@@ -64,23 +97,33 @@ export function NeighborhoodDescription({ neighborhoodId, admin }: Props) {
     return null;
   }
 
-  // Editing render (admin only — guarded by isAdmin gate above)
   return (
-    <div className="mt-3 max-w-2xl space-y-2">
+    <div className="mt-3" style={{ maxWidth: 620 }}>
       <textarea
         value={draft}
         onChange={e => setDraft(e.target.value)}
         rows={3}
-        placeholder="What does this neighborhood do? (e.g. 15 households cooperating on shared cargo bikes, retrofits, and tools.)"
-        className="textarea textarea-bordered textarea-sm w-full"
+        placeholder="What does this neighborhood do?"
+        style={{
+          width: "100%",
+          padding: 10,
+          border: "1px solid var(--hair)",
+          borderRadius: 4,
+          background: "var(--paper)",
+          color: "var(--ink)",
+          fontFamily: "var(--sans)",
+          fontSize: 14,
+          outline: "none",
+          resize: "vertical",
+        }}
       />
-      <div className="flex gap-2">
-        <button className="btn btn-primary btn-sm" disabled={isPending} onClick={onSave}>
+      <div className="flex gap-2 mt-2">
+        <Button size="sm" disabled={isPending} onClick={onSave}>
           {isPending ? "Saving…" : "Save"}
-        </button>
-        <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)}>
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );
