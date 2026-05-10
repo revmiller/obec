@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ObecRegistry: {
-      address: "0xeda49db1213e783ef25de41f9b4e82711f8d7bbd",
+      address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
       abi: [
         {
           type: "constructor",
@@ -87,6 +87,19 @@ const deployedContracts = {
               internalType: "bytes32",
             },
           ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "deactivateResource",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
           stateMutability: "nonpayable",
         },
         {
@@ -613,6 +626,25 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "ResourceDeactivated",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "resourceNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
           name: "ResourceRegistered",
           inputs: [
             {
@@ -694,15 +726,20 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "ResourceNotActive",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Unauthorized",
           inputs: [],
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 41301709,
+      deployedOnBlock: 1,
     },
     MockUSDC: {
-      address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
+      address: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
       abi: [
         {
           type: "constructor",
@@ -1037,10 +1074,10 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 3,
+      deployedOnBlock: 2,
     },
     CommitmentPool: {
-      address: "0xb19b36b1456e65e3a6d514d3f715f204bd59f431",
+      address: "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
       abi: [
         {
           type: "constructor",
@@ -1241,11 +1278,6 @@ const deployedContracts = {
                   internalType: "uint256",
                 },
                 {
-                  name: "resourceLabel",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
                   name: "resourceType",
                   type: "string",
                   internalType: "string",
@@ -1361,21 +1393,6 @@ const deployedContracts = {
                   name: "status",
                   type: "uint8",
                   internalType: "enum CommitmentPool.Status",
-                },
-                {
-                  name: "resourceLabel",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "resourceType",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "resourceNode",
-                  type: "bytes32",
-                  internalType: "bytes32",
                 },
                 {
                   name: "milestoneReleased",
@@ -1774,7 +1791,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 4,
+      deployedOnBlock: 2,
     },
   },
   84532: {
@@ -1859,6 +1876,19 @@ const deployedContracts = {
               internalType: "bytes32",
             },
           ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "deactivateResource",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [],
           stateMutability: "nonpayable",
         },
         {
@@ -2385,6 +2415,25 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "ResourceDeactivated",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "resourceNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
           name: "ResourceRegistered",
           inputs: [
             {
@@ -2462,6 +2511,11 @@ const deployedContracts = {
         {
           type: "error",
           name: "PoolAlreadySet",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "ResourceNotActive",
           inputs: [],
         },
         {
@@ -3013,11 +3067,6 @@ const deployedContracts = {
                   internalType: "uint256",
                 },
                 {
-                  name: "resourceLabel",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
                   name: "resourceType",
                   type: "string",
                   internalType: "string",
@@ -3133,21 +3182,6 @@ const deployedContracts = {
                   name: "status",
                   type: "uint8",
                   internalType: "enum CommitmentPool.Status",
-                },
-                {
-                  name: "resourceLabel",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "resourceType",
-                  type: "string",
-                  internalType: "string",
-                },
-                {
-                  name: "resourceNode",
-                  type: "bytes32",
-                  internalType: "bytes32",
                 },
                 {
                   name: "milestoneReleased",
