@@ -9,7 +9,6 @@
  *
  * Exit 0 on pass, 1 on any resolution failure.
  */
-
 import { createPublicClient, http } from "viem";
 import { sepolia } from "viem/chains";
 
@@ -22,14 +21,15 @@ const client = createPublicClient({
   transport: http(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_KEY}`),
 });
 
-const NAMES = process.argv.slice(2).length > 0
-  ? process.argv.slice(2)
-  : [
-      `vinohrady.prague.${PROTOCOL_ROOT}`,
-      `anna.vinohrady.prague.${PROTOCOL_ROOT}`,
-      `proposal-cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
-      `cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
-    ];
+const NAMES =
+  process.argv.slice(2).length > 0
+    ? process.argv.slice(2)
+    : [
+        `vinohrady.prague.${PROTOCOL_ROOT}`,
+        `anna.vinohrady.prague.${PROTOCOL_ROOT}`,
+        `proposal-cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
+        `cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
+      ];
 
 let failed = 0;
 

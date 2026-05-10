@@ -6,6 +6,701 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
+    ObecRegistry: {
+      address: "0xeda49db1213e783ef25de41f9b4e82711f8d7bbd",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "protocolRootNamehash",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "PROTOCOL_ROOT_NAMEHASH",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "addressToNode",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "commitmentPool",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "createNeighborhood",
+          inputs: [
+            {
+              name: "city",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getContenthash",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNeighborhoodMembers",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32[]",
+              internalType: "bytes32[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNeighborhoodResources",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32[]",
+              internalType: "bytes32[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNodeByAddress",
+          inputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getNodeLabels",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "string[]",
+              internalType: "string[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getText",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "key",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isMember",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "joinNeighborhood",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "label",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "memberNode",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "members",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "wallet",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "label",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "joinedAt",
+              type: "uint64",
+              internalType: "uint64",
+            },
+            {
+              name: "active",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "neighborhoodMembers",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "neighborhoodResources",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "neighborhoods",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "city",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "admin",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "active",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "registerResource",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "label",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "resourceType",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "fundedBy",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "resourceNode",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "resources",
+          inputs: [
+            {
+              name: "",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+          ],
+          outputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "label",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "resourceType",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "fundedBy",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "active",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "setCommitmentPool",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setContenthash",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "hash",
+              type: "bytes",
+              internalType: "bytes",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "setText",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              internalType: "bytes32",
+            },
+            {
+              name: "key",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "value",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "CommitmentPoolSet",
+          inputs: [
+            {
+              name: "pool",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ContenthashSet",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "hash",
+              type: "bytes",
+              indexed: false,
+              internalType: "bytes",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "MemberJoined",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "memberNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "wallet",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "label",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "NeighborhoodCreated",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "city",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "name",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "admin",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "ResourceRegistered",
+          inputs: [
+            {
+              name: "neighborhoodId",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "resourceNode",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "label",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "resourceType",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "TextSet",
+          inputs: [
+            {
+              name: "node",
+              type: "bytes32",
+              indexed: true,
+              internalType: "bytes32",
+            },
+            {
+              name: "key",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "value",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "AlreadyExists",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NeighborhoodNotFound",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NotOwner",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "NotPool",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "PoolAlreadySet",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Unauthorized",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 41301709,
+    },
     MockUSDC: {
       address: "0xa15bb66138824a1c7167f5e85b957d04dd34e468",
       abi: [
