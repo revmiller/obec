@@ -99,7 +99,12 @@ async function resolveOne(config: HandlerConfig, resolverCall: Hex): Promise<Hex
   switch (decoded.functionName) {
     case "addr": {
       const node = decoded.args[0] as Hex;
-      const coinType = (decoded.args[1] as bigint | undefined) ?? COIN_TYPE_ETH;
+      // Two function signatures share the "addr" name:
+      //   - addr(bytes32) → returns address (legacy, ETH only)
+      //   - addr(bytes32, uint256 coinType) → returns bytes (ENSIP-9 multi-coin)
+      // viem's decoder collapses both into functionName "addr"; distinguish by args.length
+      // so we honor the strict ENSIP-9 return type per docs.ens.domains/ensip/9.
+      const isLegacy = decoded.args.length === 1;
 
       // Look up member first; fall back to resource (proposals are also resources with type "proposal").
       const member = await client.readContract({
@@ -128,15 +133,18 @@ async function resolveOne(config: HandlerConfig, resolverCall: Hex): Promise<Hex
         }
       }
 
-      // ENSIP-9/11 multi-coin: any coinType supported by the registry maps to the same address.
-      // For ETH (60) we ABI-encode as `address`; for non-ETH coinTypes we return raw bytes20.
-      if (coinType === COIN_TYPE_ETH) {
+      if (isLegacy) {
+        // addr(bytes32) — strict legacy, returns address.
         return encodeAbiParameters([{ type: "address" }], [target]);
-      } else if (coinType === COIN_TYPE_BASE_SEPOLIA) {
-        return encodeAbiParameters([{ type: "bytes" }], [target]);
-      } else {
-        return encodeAbiParameters([{ type: "bytes" }], ["0x" as Hex]);
       }
+
+      // ENSIP-9 addr(bytes32, uint256 coinType) — returns bytes (raw chain-specific address).
+      const coinType = decoded.args[1] as bigint;
+      if (coinType === COIN_TYPE_ETH || coinType === COIN_TYPE_BASE_SEPOLIA) {
+        return encodeAbiParameters([{ type: "bytes" }], [target]);
+      }
+      // Unsupported coin types: return empty bytes per ENSIP-9 ("address not set").
+      return encodeAbiParameters([{ type: "bytes" }], ["0x" as Hex]);
     }
 
     case "text": {
