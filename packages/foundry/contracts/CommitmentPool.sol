@@ -15,13 +15,17 @@ interface IRegistry {
         string calldata resourceType,
         address fundedBy
     ) external returns (bytes32 resourceNode);
+    function deactivateResource(bytes32 node) external;
     function setText(bytes32 node, string calldata key, string calldata value) external;
     function setContenthash(bytes32 node, bytes calldata hash) external;
 }
 
 /// @title CommitmentPool
 /// @notice Threshold-commit-execute-attest-release state machine for neighborhood proposals.
-///         Settlement in USDC. Auto-creates a resource subname on funding.
+///         Settlement in USDC. One subname per project: registered at proposal creation,
+///         deactivated on expiry so the dead row drops out of the neighborhood listing. The
+///         pool's namehash slot remains tombstoned (Status.Expired); a retry needs a new label.
+///         Status flips from "proposing" to "active" to "completed"/"expired" via text record.
 contract CommitmentPool is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -37,7 +41,7 @@ contract CommitmentPool is ReentrancyGuard {
 
     struct Proposal {
         bytes32 neighborhoodId;
-        string  label;                  // "proposal-cargo-bikes"
+        string  label;                  // "cargo-bikes" — also the resource subname label
         address executor;
         uint256 targetAmount;
         uint256 minMembers;
@@ -49,11 +53,6 @@ contract CommitmentPool is ReentrancyGuard {
         uint256 memberCount;
         uint256 attestationCount;
         Status  status;
-        // Auto-resource creation params:
-        string  resourceLabel;          // "cargo-bikes"
-        string  resourceType;           // "energy"
-        bytes32 resourceNode;           // populated on funding
-        // Milestone tracking:
         bool[3] milestoneReleased;
     }
 
@@ -105,15 +104,14 @@ contract CommitmentPool is ReentrancyGuard {
 
     struct CreateParams {
         bytes32 neighborhoodId;
-        string  label;
+        string  label;                  // project name; becomes the ENS subname for the lifecycle
         address executor;
         uint256 targetAmount;
         uint256 minMembers;
         uint64  deadline;
         uint64  warrantyDuration;
         uint256 attestationThreshold;
-        string  resourceLabel;
-        string  resourceType;
+        string  resourceType;           // "energy", "mobility", "tool", "space"
     }
 
     function createProposal(CreateParams calldata p) external returns (bytes32 proposalNode) {
@@ -132,12 +130,11 @@ contract CommitmentPool is ReentrancyGuard {
         pr.deadline = p.deadline;
         pr.warrantyDuration = p.warrantyDuration;
         pr.attestationThreshold = p.attestationThreshold;
-        pr.resourceLabel = p.resourceLabel;
-        pr.resourceType = p.resourceType;
         pr.status = Status.Active;
 
-        // Register the proposal as a "proposal"-typed subname so the resolver can resolve it.
-        registry.registerResource(p.neighborhoodId, p.label, "proposal", address(this));
+        // Register the project subname now; the same node serves as proposal and (post-funding) resource.
+        registry.registerResource(p.neighborhoodId, p.label, p.resourceType, address(this));
+        registry.setText(proposalNode, "status", "proposing");
 
         emit ProposalCreated(proposalNode, p.neighborhoodId, p.executor);
     }
@@ -199,7 +196,12 @@ contract CommitmentPool is ReentrancyGuard {
         Proposal storage pr = _proposals[proposalNode];
         if (pr.status != Status.Active) revert NotActive();
         if (block.timestamp < pr.deadline) revert PastDeadline(); // not yet expired
+
         pr.status = Status.Expired;
+
+        registry.setText(proposalNode, "status", "expired");
+        registry.deactivateResource(proposalNode);
+
         emit Expired(proposalNode);
     }
 
@@ -217,8 +219,8 @@ contract CommitmentPool is ReentrancyGuard {
         emit Attested(proposalNode, msg.sender, pr.attestationCount);
 
         if (pr.attestationCount >= pr.attestationThreshold && !pr.milestoneReleased[1]) {
-            // Anchor attesters as a verifiable credential on the resource subname.
-            registry.setText(pr.resourceNode, "attestations", _formatAttesters(proposalNode));
+            // Anchor attesters as a verifiable credential on the project subname.
+            registry.setText(proposalNode, "attestations", _formatAttesters(proposalNode));
             _releaseMilestone(proposalNode, 1);
             pr.attestedAt = uint64(block.timestamp);
         }
@@ -230,8 +232,11 @@ contract CommitmentPool is ReentrancyGuard {
         if (!pr.milestoneReleased[1]) revert MilestoneNotReady();
         if (pr.milestoneReleased[2]) revert MilestoneAlreadyReleased();
         if (block.timestamp < pr.attestedAt + pr.warrantyDuration) revert MilestoneNotReady();
+
         _releaseMilestone(proposalNode, 2);
         pr.status = Status.Completed;
+
+        registry.setText(proposalNode, "status", "completed");
     }
 
     function raiseDispute(bytes32 proposalNode) external {
@@ -239,6 +244,9 @@ contract CommitmentPool is ReentrancyGuard {
         if (pr.status != Status.Executing) revert WrongStatus();
         if (commitments[proposalNode][msg.sender] == 0) revert NotMember();
         pr.status = Status.Disputed;
+
+        registry.setText(proposalNode, "status", "disputed");
+
         emit Disputed(proposalNode, msg.sender);
     }
 
@@ -249,17 +257,9 @@ contract CommitmentPool is ReentrancyGuard {
         pr.status = Status.Executing; // first milestone fires immediately
         emit ThresholdMet(proposalNode, pr.totalCommitted, pr.memberCount);
 
-        // Auto-create the resource subname.
-        bytes32 resourceNode = registry.registerResource(
-            pr.neighborhoodId,
-            pr.resourceLabel,
-            pr.resourceType,
-            address(this)
-        );
-        pr.resourceNode = resourceNode;
-        registry.setText(resourceNode, "funded-by", pr.label);
-        registry.setText(resourceNode, "status", "active");
-        registry.setText(resourceNode, "maintainer", Strings.toHexString(pr.executor));
+        // Same subname registered at proposal creation; flip status and anchor maintainer.
+        registry.setText(proposalNode, "status", "active");
+        registry.setText(proposalNode, "maintainer", Strings.toHexString(pr.executor));
 
         _releaseMilestone(proposalNode, 0);
     }

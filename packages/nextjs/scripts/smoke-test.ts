@@ -27,7 +27,6 @@ const NAMES =
     : [
         `vinohrady.prague.${PROTOCOL_ROOT}`,
         `anna.vinohrady.prague.${PROTOCOL_ROOT}`,
-        `proposal-cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
         `cargo-bikes.vinohrady.prague.${PROTOCOL_ROOT}`,
       ];
 
@@ -67,7 +66,7 @@ function stringify(v: unknown): string {
       client.getEnsAddress({ name, coinType: COIN_TYPE_BASE_SEPOLIA }),
     );
     await timed(`getEnsText("description")`, () => client.getEnsText({ name, key: "description" }));
-    await timed(`getEnsText("funded-by")`, () => client.getEnsText({ name, key: "funded-by" }));
+    await timed(`getEnsText("status")`, () => client.getEnsText({ name, key: "status" }));
     await timed(`getEnsText("maintainer")`, () => client.getEnsText({ name, key: "maintainer" }));
     await timed(`getEnsText("attestations")`, () => client.getEnsText({ name, key: "attestations" }));
   }

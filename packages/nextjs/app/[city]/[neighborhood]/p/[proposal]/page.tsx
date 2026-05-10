@@ -8,7 +8,6 @@ import { AttestButton } from "~~/components/AttestButton";
 import { CommitForm } from "~~/components/CommitForm";
 import { ExecutorPanel } from "~~/components/ExecutorPanel";
 import { MyCommitment } from "~~/components/MyCommitment";
-import { ResolvedViaENS } from "~~/components/ResolvedViaENS";
 import { ResourceCard } from "~~/components/ResourceCard";
 import { ShareButton } from "~~/components/ShareButton";
 import { ENSName, NamehashChip, Pill, SectionHead } from "~~/components/obec";
@@ -63,7 +62,6 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
 
   const isFundraising = status === 1;
   const isExecuting = status === 2;
-  const hasResource = pr?.resourceNode && pr.resourceNode !== `0x${"0".repeat(64)}`;
 
   return (
     <div className="flex flex-col grow">
@@ -267,18 +265,12 @@ export default function ProposalPage({ params }: { params: Promise<Params> }) {
                 </div>
               )}
 
-              {hasResource && (
+              {pr && status !== 4 && (
                 <div className="mt-12">
-                  <SectionHead num="02">Resource</SectionHead>
+                  <SectionHead num="02">ENS records</SectionHead>
                   <div className="mt-6">
-                    <ResourceCard resourceNode={pr!.resourceNode as `0x${string}`} />
+                    <ResourceCard projectNode={proposalNode} />
                   </div>
-                </div>
-              )}
-
-              {hasResource && pr?.resourceLabel && (
-                <div className="mt-6">
-                  <ResolvedViaENS name={`${pr.resourceLabel}.${neighborhood}.${city}.${PROTOCOL_ROOT}`} />
                 </div>
               )}
 

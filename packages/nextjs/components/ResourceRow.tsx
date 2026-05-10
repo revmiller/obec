@@ -35,12 +35,11 @@ export function ResourceRow({ node, city, neighborhood, index }: Props) {
   const isActive = resource && Array.isArray(resource) && resource[4];
   const label = isActive ? (resource[1] as string) : undefined;
   const type = isActive ? (resource[2] as string) : undefined;
-  const isProposal = type === "proposal";
 
   const { data: proposal } = useScaffoldReadContract({
     contractName: "CommitmentPool",
     functionName: "getProposal",
-    args: isProposal ? [node] : [undefined],
+    args: [node],
   });
 
   if (!isActive || !label) return null;
@@ -56,8 +55,8 @@ export function ResourceRow({ node, city, neighborhood, index }: Props) {
   const isExpired = status === STATUS.Expired;
   const isDisputed = status === STATUS.Disputed;
 
-  const href = isProposal ? `/${city}/${neighborhood}/p/${label}` : undefined;
-  const ctaLabel = isFundraising ? "Commit" : isProposal ? "View" : "Detail";
+  const href = `/${city}/${neighborhood}/p/${label}`;
+  const ctaLabel = isFundraising ? "Commit" : "View";
 
   const inner = (
     <article
@@ -116,10 +115,9 @@ export function ResourceRow({ node, city, neighborhood, index }: Props) {
             disputed
           </Pill>
         )}
-        {status === STATUS.None && !isProposal && <Pill>resource</Pill>}
       </div>
       <div className="hidden sm:block">
-        {isProposal && targetUsd > 0 ? (
+        {targetUsd > 0 ? (
           <>
             <Meter value={committedUsd} total={targetUsd} height={3} showLabels={false} />
             <div
@@ -157,11 +155,9 @@ export function ResourceRow({ node, city, neighborhood, index }: Props) {
     </article>
   );
 
-  return href ? (
+  return (
     <Link href={href} style={{ textDecoration: "none", color: "inherit", display: "block" }}>
       {inner}
     </Link>
-  ) : (
-    inner
   );
 }

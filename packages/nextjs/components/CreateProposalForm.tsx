@@ -24,7 +24,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const { address } = useAccount();
   const [open, setOpen] = useState(false);
 
-  const [label, setLabel] = useState("proposal-cargo-bikes");
+  const [label, setLabel] = useState("cargo-bikes");
   const [executor, setExecutor] = useState<string>("");
   const [description, setDescription] = useState(
     "Two e-cargo bikes for our building. 14 households share unlimited access via key cabinet + booking calendar. Replaces ~80% of family car trips for groceries, school runs, and hardware store hauls.",
@@ -37,7 +37,6 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
   const [minMembers, setMinMembers] = useState("14");
   const [attestationThreshold, setAttestationThreshold] = useState("8");
   const [deadlineDays, setDeadlineDays] = useState("30");
-  const [resourceLabel, setResourceLabel] = useState("cargo-bikes");
   const [resourceType, setResourceType] = useState("mobility");
 
   const { data: connectedNode } = useScaffoldReadContract({
@@ -70,7 +69,6 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           deadline,
           warrantyDuration: DEFAULT_WARRANTY_SECONDS,
           attestationThreshold: BigInt(attestationThreshold),
-          resourceLabel,
           resourceType,
         },
       ],
@@ -131,8 +129,7 @@ export function CreateProposalForm({ neighborhoodId, city, neighborhood }: Props
           <Field label="Min members" value={minMembers} onChange={setMinMembers} />
           <Field label="Attestations needed" value={attestationThreshold} onChange={setAttestationThreshold} />
           <Field label="Deadline (days from now)" value={deadlineDays} onChange={setDeadlineDays} />
-          <Field label="Resource label" value={resourceLabel} onChange={setResourceLabel} mono />
-          <Field label="Resource type" value={resourceType} onChange={setResourceType} />
+          <Field label="Project type" value={resourceType} onChange={setResourceType} />
         </div>
         <div className="flex gap-2">
           <button className="obec-btn sm" disabled={isPending || !executor} onClick={submit}>
