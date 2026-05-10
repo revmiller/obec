@@ -112,6 +112,7 @@ contract CommitmentPool is ReentrancyGuard {
         uint64  warrantyDuration;
         uint256 attestationThreshold;
         string  resourceType;           // "energy", "mobility", "tool", "space"
+        string  description;            // free-form; written as text(node, "description") via the pool
     }
 
     function createProposal(CreateParams calldata p) external returns (bytes32 proposalNode) {
@@ -135,6 +136,11 @@ contract CommitmentPool is ReentrancyGuard {
         // Register the project subname now; the same node serves as proposal and (post-funding) resource.
         registry.registerResource(p.neighborhoodId, p.label, p.resourceType, address(this));
         registry.setText(proposalNode, "status", "proposing");
+        // Pool relays the description so a non-admin proposer (who isn't authorized on the
+        // resource node directly) can still anchor it on the subname in one tx.
+        if (bytes(p.description).length != 0) {
+            registry.setText(proposalNode, "description", p.description);
+        }
 
         emit ProposalCreated(proposalNode, p.neighborhoodId, p.executor);
     }

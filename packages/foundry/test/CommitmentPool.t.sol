@@ -335,7 +335,8 @@ contract CommitmentPoolTest is Test {
             deadline: uint64(block.timestamp + 30 days),
             warrantyDuration: WARRANTY,
             attestationThreshold: 8,
-            resourceType: "mobility"
+            resourceType: "mobility",
+            description: ""
         });
     }
 
