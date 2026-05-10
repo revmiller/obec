@@ -1,103 +1,102 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { hardhat } from "viem/chains";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
-import { ConnectedAs } from "~~/components/ConnectedAs";
-import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
-import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { useAccount } from "wagmi";
+import { Avatar } from "~~/components/obec";
+import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { useOutsideClick, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+
+const ZERO_NODE = `0x${"0".repeat(64)}` as const;
+
+export const Header = () => {
+  const [walletOpen, setWalletOpen] = useState(false);
+  const walletRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(walletRef, () => setWalletOpen(false));
+
+  return (
+    <header
+      className="flex items-center gap-7 px-6 sm:px-10 py-5 bg-[var(--paper)]"
+      style={{ borderBottom: "1px solid var(--hair)" }}
+    >
+      <Link href="/" className="flex items-baseline gap-3.5 no-underline">
+        <span
+          className="serif"
+          style={{
+            fontSize: 22,
+            fontWeight: 400,
+            letterSpacing: "-0.04em",
+            color: "var(--ink)",
+            lineHeight: 1,
+          }}
+        >
+          obec
+        </span>
+      </Link>
+
+      <div className="flex-1" />
+
+      <div className="hidden md:block">
+        <Identity />
+      </div>
+
+      <div ref={walletRef} className="relative">
+        <button className="obec-btn ghost sm" onClick={() => setWalletOpen(v => !v)} aria-expanded={walletOpen}>
+          Wallet
+        </button>
+        {walletOpen && (
+          <div
+            className="absolute right-0 mt-2 z-30 p-3 bg-[var(--paper)]"
+            style={{ border: "1px solid var(--hair)", minWidth: 280 }}
+          >
+            <RainbowKitCustomConnectButton />
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
 
 const PROTOCOL_ROOT = process.env.NEXT_PUBLIC_PROTOCOL_ROOT ?? "obec.eth";
 
-type HeaderMenuLink = {
-  label: string;
-  href: string;
-  icon?: React.ReactNode;
-};
+function Identity() {
+  const { address, isConnected } = useAccount();
 
-export const menuLinks: HeaderMenuLink[] = [
-  {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
-  },
-];
+  const { data: node } = useScaffoldReadContract({
+    contractName: "ObecRegistry",
+    functionName: "getNodeByAddress",
+    args: [address],
+  });
+  const hasMembership = !!node && node !== ZERO_NODE;
 
-export const HeaderMenuLinks = () => {
-  const pathname = usePathname();
-
-  return (
-    <>
-      {menuLinks.map(({ label, href, icon }) => {
-        const isActive = pathname === href;
-        return (
-          <li key={href}>
-            <Link
-              href={href}
-              passHref
-              className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
-            >
-              {icon}
-              <span>{label}</span>
-            </Link>
-          </li>
-        );
-      })}
-    </>
-  );
-};
-
-/**
- * Site header
- */
-export const Header = () => {
-  const { targetNetwork } = useTargetNetwork();
-  const isLocalNetwork = targetNetwork.id === hardhat.id;
-
-  const burgerMenuRef = useRef<HTMLDetailsElement>(null);
-  useOutsideClick(burgerMenuRef, () => {
-    burgerMenuRef?.current?.removeAttribute("open");
+  const { data: labels } = useScaffoldReadContract({
+    contractName: "ObecRegistry",
+    functionName: "getNodeLabels",
+    args: hasMembership ? [node] : [undefined],
   });
 
+  if (!isConnected || !address) return null;
+
+  if (Array.isArray(labels) && labels.length > 0) {
+    const leaf = labels[0];
+    const parent = labels.slice(1).join(".");
+    return (
+      <span
+        className="mono flex items-center gap-2 pl-5"
+        style={{ borderLeft: "1px solid var(--hair)", height: 18, fontSize: 12, color: "var(--ink-2)" }}
+      >
+        <Avatar handle={leaf} size="sm" />
+        <span style={{ fontWeight: 500 }}>
+          {leaf}
+          <span style={{ color: "var(--ink-4)" }}>.{parent || PROTOCOL_ROOT}</span>
+        </span>
+      </span>
+    );
+  }
+
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
-      <div className="navbar-start w-auto lg:w-1/2">
-        <details className="dropdown" ref={burgerMenuRef}>
-          <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent">
-            <Bars3Icon className="h-1/2" />
-          </summary>
-          <ul
-            className="menu menu-compact dropdown-content mt-3 p-2 shadow-sm bg-base-100 rounded-box w-52"
-            onClick={() => {
-              burgerMenuRef?.current?.removeAttribute("open");
-            }}
-          >
-            <HeaderMenuLinks />
-          </ul>
-        </details>
-        <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="flex flex-col">
-            <span className="font-bold leading-tight">Obec</span>
-            <span className="text-xs font-mono opacity-70">{PROTOCOL_ROOT}</span>
-          </div>
-        </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
-          <HeaderMenuLinks />
-        </ul>
-      </div>
-      <div className="navbar-end grow mr-4 flex items-center">
-        <ConnectedAs />
-        <RainbowKitCustomConnectButton />
-        {isLocalNetwork && <FaucetButton />}
-      </div>
-    </div>
+    <span className="mono pl-5" style={{ borderLeft: "1px solid var(--hair)", fontSize: 12, color: "var(--ink-3)" }}>
+      {address.slice(0, 6)}…{address.slice(-4)}
+    </span>
   );
-};
+}
